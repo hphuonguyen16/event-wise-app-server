@@ -4,11 +4,11 @@ const EventSchema = new mongoose.Schema({
   images: [String],
   title: {
     type: String,
-    required: [true, "An advertisement plan must have a specific title"],
+    required: [true, "An event must have a specific title"],
   },
   summary: {
     type: String,
-    required: [true, "An advertisement plan must have a specific summary"],
+    required: [true, "An event must have a specific summary"],
   },
   location: {
     formatted: String,
@@ -22,7 +22,7 @@ const EventSchema = new mongoose.Schema({
   },
   date: {
     type: String,
-    required: [true, "An advertisement plan must have a specific date"],
+    required: [true, "An event must have a specific date"],
   },
   startTime: {
     type: String,
@@ -42,6 +42,10 @@ const EventSchema = new mongoose.Schema({
       },
     },
   ],
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
   createdAt: {
     type: Date,
     default: Date.now,

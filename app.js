@@ -15,6 +15,7 @@ const AppError = require("./utils/appError");
 const globalErrorHandler = require("./controllers/errorController");
 const userRouter = require("./routes/userRoutes");
 const eventRouter = require("./routes/eventRoutes");
+const ticketTypeRouter = require("./routes/ticketTypeRoutes");
 
 const cors = require("cors");
 
@@ -108,6 +109,8 @@ app.use((req, res, next) => {
 // 3) ROUTES
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/events", eventRouter);
+app.use("/api/v1/ticket-types", ticketTypeRouter);
+
 
 
 app.all("*", (req, res, next) => {

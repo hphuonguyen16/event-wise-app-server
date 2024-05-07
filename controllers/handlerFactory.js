@@ -30,7 +30,10 @@ exports.updateOne = (Model) =>
 exports.createOne = (Model) =>
   catchAsync(async (req, res) => {
     const doc = await handlerFactoryServices.createOne(Model, req.body);
-
+    if (req.user && Model.modelName === "Event") {
+      doc.user = req.user.id;
+      doc.save();
+    }
     res.status(201).json({
       status: "success",
       data: {

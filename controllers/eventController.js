@@ -13,6 +13,16 @@ exports.getMyEvents = catchAsync(async (req, res) => {
     res.status(200).json(data);
 })
 
+exports.publishEvent = catchAsync(async (req, res) => {
+    const data = await EventService.publishEvent(req.body);
+    res.status(200).json(data);
+})
+
+exports.changeStatusEvent = catchAsync(async (req, res) => {
+    const data = await EventService.changeStatusEvent(req.body);
+    res.status(200).json(data);
+})
+
 
 exports.getAllEvents = handlerFactory.getAll(EventModel);
 exports.getEvent = handlerFactory.getOne(EventModel);

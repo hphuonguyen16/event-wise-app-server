@@ -5,10 +5,14 @@ const bcrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema(
   {
-    // name: {
-    //   type: String,
-    //   required: [true, "Please tell us your name!"],
-    // },
+    firstname: {
+      type: String,
+      required: [true, "Please provide your first name"],
+    },
+    lastname: {
+      type: String,
+      required: [true, "Please provide your last name"],
+    },  
     email: {
       type: String,
       required: [true, "Please provide your email"],
@@ -49,6 +53,7 @@ const userSchema = new mongoose.Schema(
     //   type: mongoose.Schema.Types.ObjectId,
     //   ref: "Profile", // Reference to the Profile model
     // },
+    
     refreshToken: String,
     verifyToken: String,
     verify: {

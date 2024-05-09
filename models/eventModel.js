@@ -21,14 +21,14 @@ const EventSchema = new mongoose.Schema({
     ref: "EventCategory",
   },
   date: {
-    type: String,
+    type: Date,
     required: [true, "An event must have a specific date"],
   },
   startTime: {
-    type: String,
+    type: Date,
   },
   endTime: {
-    type: String,
+    type: Date,
   },
   about: [
     {
@@ -46,15 +46,27 @@ const EventSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
   },
+  visibility: {
+    type: String,
+    enum: ["public", "private"],
+    default: "public",
+  },
+
+  isPublished: {
+    type: Boolean,
+    default: false,
+  },
+  status: {
+    type: String,
+    enum: ["building", 'ticketing', 'published','unpublished'],
+    default: "building",
+  },
   createdAt: {
     type: Date,
     default: Date.now,
   },
 });
 
-const EventModel = mongoose.model(
-  "Event",
-  EventSchema
-);
+const EventModel = mongoose.model("Event", EventSchema);
 
 module.exports = EventModel;

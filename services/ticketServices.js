@@ -39,7 +39,6 @@ exports.getTicketTypesByEventId = (eventId, query) => {
       //   ticketType.sold = registration ? registration.count : 0;
       // });
 
-      
       resolve({
         status: "success",
         results: ticketTypes.length,

@@ -3,6 +3,9 @@ const categoryController = require("../controllers/categoryController");
 const authController = require("../controllers/authController");
 const router = express.Router();
 
+
+router.get("/popular", categoryController.getPopularCategories);
+
 router.use(authController.protect);
 
 router
@@ -15,5 +18,7 @@ router
   .get(categoryController.getCategory)
   .put(categoryController.updateCategory)
   .delete(categoryController.deleteCategory);
+
+
 
 module.exports = router;

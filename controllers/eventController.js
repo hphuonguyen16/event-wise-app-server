@@ -23,6 +23,17 @@ exports.changeStatusEvent = catchAsync(async (req, res) => {
     res.status(200).json(data);
 })
 
+exports.getEventsByUser = catchAsync(async (req, res) => {
+    const data = await EventService.getEventsByUser(req.params.id, req.query);
+    res.status(200).json(data);
+})
+
+exports.searchEventsOrOrganizers = catchAsync(async (req, res) => {
+    const { q } = req.query;
+  const data = await EventService.searchEventsOrOrganizers(q);
+  res.status(200).json(data);
+});
+
 
 exports.getAllEvents = handlerFactory.getAll(EventModel);
 exports.getEvent = handlerFactory.getOne(EventModel);

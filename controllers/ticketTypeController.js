@@ -15,3 +15,8 @@ exports.getTicketType = handlerFactory.getOne(TicketTypeModel);
 exports.updateTicketType = handlerFactory.updateOne(TicketTypeModel);
 exports.deleteTicketType = handlerFactory.deleteOne(TicketTypeModel);
 exports.getAllTicketTypes = handlerFactory.getAll(TicketTypeModel);
+
+exports.updateTicketTypeSoldCount = catchAsync(async (req, res, next) => {
+  const data = await TicketTypeService.updateTicketTypeSoldCount(req.params.id);
+  next();
+})

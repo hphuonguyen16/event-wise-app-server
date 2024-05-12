@@ -18,6 +18,7 @@ const eventRouter = require("./routes/eventRoutes");
 const ticketTypeRouter = require("./routes/ticketTypeRoutes");
 const categoryRouter = require("./routes/categoryRoutes");
 const registrationRouter = require("./routes/registrationRoutes");
+const transactionRouter = require("./routes/transactionRoutes");
 
 const cors = require("cors");
 
@@ -114,6 +115,7 @@ app.use("/api/v1/events", eventRouter);
 app.use("/api/v1/ticket-types", ticketTypeRouter);
 app.use("/api/v1/categories", categoryRouter);
 app.use("/api/v1/registrations", registrationRouter);
+app.use("/api/v1/transactions", transactionRouter);
 
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));

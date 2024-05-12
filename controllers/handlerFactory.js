@@ -1,5 +1,6 @@
 const catchAsync = require("./../utils/catchAsync");
 const handlerFactoryServices = require("../services/handlerFactoryServices");
+const TicketTypeModel = require("../models/ticketTypeModel");
 
 exports.deleteOne = (Model) =>
   catchAsync(async (req, res) => {

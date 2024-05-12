@@ -58,13 +58,23 @@ const EventSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["building", 'ticketing', 'published','unpublished'],
+    enum: ["building", "ticketing", "published", "unpublished"],
     default: "building",
+  },
+  revenue: {
+    type: Number,
+    default: 0,
   },
   createdAt: {
     type: Date,
     default: Date.now,
   },
+});
+
+EventSchema.pre(/^find/, function (next) {
+  // this points to the current query
+  this.populate("user", "profile");
+  next();
 });
 
 const EventModel = mongoose.model("Event", EventSchema);

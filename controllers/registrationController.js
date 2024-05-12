@@ -13,8 +13,18 @@ exports.getRegistrationsByEventId = catchAsync(async (req, res) => {
   res.status(200).json(data);
 });
 
-exports.getAllRegistrations = handlerFactory.getAll(RegistrationModel);
 exports.getRegistration = handlerFactory.getOne(RegistrationModel);
-exports.createRegistration = handlerFactory.createOne(RegistrationModel);
+
 exports.updateRegistration = handlerFactory.updateOne(RegistrationModel);
 exports.deleteRegistration = handlerFactory.deleteOne(RegistrationModel);
+
+exports.createRegistration = catchAsync(async (req, res) => {
+  if (!req.body.user && !req.body.contactInfo) req.body.user = req.user.id;
+  const data = await RegistrationService.createRegistration(req.body);
+  res.status(201).json(data);
+});
+
+exports.getAllRegistrations = catchAsync(async (req, res) => {
+  const data = await RegistrationService.getAllRegistrations(req.query);
+  res.status(200).json(data);
+});

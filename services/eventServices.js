@@ -3,6 +3,9 @@ const APIFeatures = require("./../utils/apiFeatures");
 const { findUserById } = require("./authServices");
 const Event = require("../models/eventModel");
 const { event } = require("jquery");
+const EventModel = require("../models/eventModel");
+const UserModel = require("../models/userModel");
+const ProfileModel = require("../models/profileModel");
 
 exports.getMyEvents = (userId, query) => {
   return new Promise(async (resolve, reject) => {
@@ -68,6 +71,51 @@ exports.changeStatusEvent = (data) => {
           runValidators: true,
         }
       );
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+//get events by user id
+
+exports.getEventsByUserId = (userId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const events = await Event.find({ user: userId });
+      resolve({
+        status: "success",
+        results: events.length,
+        data: events,
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+exports.searchEventsOrOrganizers = (queryString) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Search for events by title
+      console.log(queryString);
+
+      const eventSearchResult = await EventModel.find({
+        title: { $regex: new RegExp(queryString, "i") }, // Case-insensitive search
+      });
+
+      // Search for organizers by name
+      const organizerSearchResult = await ProfileModel.find({
+        name: { $regex: new RegExp(queryString, "i") }, // Case-insensitive search
+      });
+
+      resolve({
+        status: "success",
+        data: {
+          events: eventSearchResult,
+          organizers: organizerSearchResult,
+        },
+      });
     } catch (error) {
       reject(error);
     }

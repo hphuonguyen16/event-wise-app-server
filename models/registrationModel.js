@@ -18,7 +18,7 @@ const RegistrationSchema = new mongoose.Schema({
       },
       quantity: {
         type: Number,
-      },
+      }
     },
   ],
   totalPrice: {
@@ -39,15 +39,12 @@ const RegistrationSchema = new mongoose.Schema({
   contactInfo: {
    firstName: {
      type: String,
-     required: [true, "Please provide your first name"],
     },
     lastName: {
       type: String,
-      required: [true, "Please provide your last name"],
     },
     email: {
       type: String,
-      required: [true, "Please provide your email"],
       validate: [validator.isEmail, "Please provide a valid email"],
     },
   },

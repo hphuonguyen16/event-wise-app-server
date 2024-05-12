@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema(
     lastname: {
       type: String,
       required: [true, "Please provide your last name"],
-    },  
+    },
     email: {
       type: String,
       required: [true, "Please provide your email"],
@@ -48,12 +48,12 @@ const userSchema = new mongoose.Schema(
       },
     },
     passwordChangedAt: Date,
-    
+
     // profile: {
     //   type: mongoose.Schema.Types.ObjectId,
     //   ref: "Profile", // Reference to the Profile model
     // },
-    
+
     refreshToken: String,
     verifyToken: String,
     verify: {
@@ -63,6 +63,10 @@ const userSchema = new mongoose.Schema(
     approved: {
       type: Boolean,
       default: false,
+    },
+    balance: {
+      type: Number,
+      default: 0,
     },
     createdAt: {
       type: Date,
@@ -104,7 +108,7 @@ userSchema.pre("save", function (next) {
 userSchema.pre(/^find/, function (next) {
   // this points to the current query
   this.find({ active: { $ne: false } }).select("-verifyToken -refreshToken");
-  this.populate("profile", "firstname lastname avatar slug");
+  this.populate("profile", "firstname lastname avatar slug name");
   next();
 });
 

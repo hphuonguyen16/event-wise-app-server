@@ -25,6 +25,14 @@ const TicketTypeSchema = new mongoose.Schema({
       message: () => `Quantity must be greater or equal to 0`,
     },
   },
+  sold: {
+    type: Number,
+    default: 0,
+  },
+  revenue: {
+    type: Number,
+    default: 0,
+  },
   event: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Event",

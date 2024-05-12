@@ -49,3 +49,26 @@ exports.getTicketTypesByEventId = (eventId, query) => {
     }
   });
 };
+
+//update the ticket type sold count
+
+exports.updateTicketTypeSoldCount = (ticketTypeId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const ticketType = await TicketTypeModel.findById(ticketTypeId);
+      if (!ticketType) {
+        reject(new AppError("Ticket Type not found", 404));
+      }
+
+      ticketType.sold = ticketType.sold + 1;
+      await ticketType.save();
+
+      resolve({
+        status: "success",
+        data: ticketType,
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};

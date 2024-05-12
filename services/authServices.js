@@ -55,11 +55,9 @@ exports.signup = (data) => {
       if (
         !data.email ||
         !data.password ||
-        !data.passwordConfirm
-        // !data.firstname ||
-        // !data.lastname ||
-        // !data.slug ||
-        // data.gender === undefined
+        !data.passwordConfirm ||
+        !data.firstname ||
+        !data.lastname 
       ) {
         reject(new AppError("Please fill in all required fields", 400));
       } else if (data.password !== data.passwordConfirm) {
@@ -67,27 +65,31 @@ exports.signup = (data) => {
       } else {
         const verifyToken = crypto.randomBytes(32).toString("hex");
         const user = await UserModel.create({
-          phonenumber: data.phonenumber,
+          firstname: data.firstname,
+          lastname: data.lastname,
           email: data.email,
+          phonenumber: data.phonenumber,
           password: data.password,
           passwordConfirm: data.passwordConfirm,
           role: data.role,
           verifyToken: verifyToken,
-          preferences: data.preferences,
         });
-        // const profile = await ProfileModel.create({
-        //   firstname: data.firstname,
-        //   lastname: data.lastname,
-        //   gender: data.gender,
-        //   avatar: data.avatar,
-        //   address: data.address,
-        //   bio: data.bio,
-        //   birthday: data.birthday,
-        //   user: user.id,
-        //   slug: data.slug,
-        // });
-        // const url = `${process.env.CLIENT_URL}/verify/${user._id}/${verifyToken}`;
-        // await sendEmail(user.email, "Email Verification", url);
+        const profile = await ProfileModel.create({
+          firstname: data.firstname,
+          lastname: data.lastname,
+          name: data.name,
+          gender: data.gender,
+          avatar: data.avatar,
+          address: data.address,
+          bio: data.bio,
+          birthday: data.birthday,
+          social: data.social,
+          website: data.website,
+          user: user.id,
+          slug: data.slug,
+        });
+        const url = `${process.env.CLIENT_URL}/verify/${user._id}/${verifyToken}`;
+        await sendEmail(user.email, "Email Verification", url);
         resolve(user);
       }
     } catch (error) {

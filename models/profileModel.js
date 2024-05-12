@@ -7,7 +7,6 @@ const Profileschema = new mongoose.Schema(
       maxLength: 20,
       minLength: 2,
       trim: true,
-      required: [true, "Please tell us your first name!"],
       validate: {
         validator: function (value) {
           return /^[a-zA-Z0-9]+$/.test(value);
@@ -20,7 +19,6 @@ const Profileschema = new mongoose.Schema(
       maxLength: 20,
       minLength: 2,
       trim: true,
-      required: [true, "Please tell us your last name!"],
       validate: {
         validator: function (value) {
           return /^[a-zA-Z0-9]+$/.test(value);
@@ -28,29 +26,30 @@ const Profileschema = new mongoose.Schema(
         message: "Lastname only contains characters, numbers and underscore",
       },
     },
-    // slug: {
-    //   type: String,
-    //   required: [true, "Please tell us your slug!"],
-    //   maxLength: 30,
-    //   minLength: 4,
-    //   trim: true,
-    //   unique: true,
-    //   validate: {
-    //     validator: function (value) {
-    //       return /^[a-zA-Z0-9_]+$/.test(value);
-    //     },
-    //     message: "A slug only contains characters, numbers and underscore",
-    //   },
-    // },
+    name: {
+      type: String,
+      maxLength: 40,
+      minLength: 2,
+      trim: true,
+      validate: {
+        validator: function (value) {
+          return /^[a-zA-Z0-9]+$/.test(value);
+        },
+        message: "Name only contains characters, numbers and underscore",
+      },
+    },
     gender: {
       type: Boolean,
-      required: [true, "Please tell us your gender"],
     },
     avatar: String,
-    background: String,
     address: String,
     bio: String,
     birthday: Date,
+    social: {
+      facebook: String,
+      twitter: String,
+    },
+    website: String,
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User", // Reference to the User model

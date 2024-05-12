@@ -6,10 +6,10 @@ const ticketTypeController = require("../controllers/ticketTypeController");
 const registrationController = require("../controllers/registrationController");
 const router = express.Router();
 
-router.use(authController.protect);
 
 router.get("/my-events", authController.protect, eventController.getMyEvents);
 router.put("/publish", authController.protect, eventController.publishEvent);
+router.get("/search", eventController.searchEventsOrOrganizers);
 
 router.put(
   "/change-status",
@@ -21,6 +21,7 @@ router
   .route("/")
   .get(eventController.getAllEvents)
   .post(authController.protect, eventController.createEvent);
+
 
 router
   .route("/:id")

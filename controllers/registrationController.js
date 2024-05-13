@@ -28,3 +28,12 @@ exports.getAllRegistrations = catchAsync(async (req, res) => {
   const data = await RegistrationService.getAllRegistrations(req.query);
   res.status(200).json(data);
 });
+
+
+exports.getMyRegistrations = catchAsync(async (req, res) => {
+  const userId = req.user.id;
+  const data = await RegistrationService.getMyRegistrations(userId, req.query);
+  res.status(200).json(data);
+});
+
+

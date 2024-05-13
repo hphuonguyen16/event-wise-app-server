@@ -14,6 +14,18 @@ const Profileschema = new mongoose.Schema(
         message: "Firstname only contains characters and numbers",
       },
     },
+    name: {
+      type: String,
+      maxLength: 40,
+      minLength: 2,
+      trim: true,
+      validate: {
+        validator: function (value) {
+          return /^[a-zA-Z0-9]+$/.test(value);
+        },
+        message: "Name only contains characters and numbers",
+      },
+    },
     lastname: {
       type: String,
       maxLength: 20,

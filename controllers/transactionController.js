@@ -11,7 +11,10 @@ const factory = require("./../controllers/handlerFactory");
 const RegistrationServices = require("./../services/registrationServices");
 const Transaction = require("../models/transactionModel");
 
-exports.getAllTransactions = factory.getAll(Transaction);
+exports.getAllTransactions = catchAsync(async (req, res, next) => {
+  const data = await TransactionServices.getAllTransactions(req.query);
+  res.status(200).json(data);
+});
 // exports.getTransactionsByBusiness = catchAsync(async (req, res, next) => {
 //   const data = await TransactionServices.getTransactionByBusiness(
 //     req.params.id,
@@ -20,7 +23,7 @@ exports.getAllTransactions = factory.getAll(Transaction);
 
 //   res.status(200).json(data);
 // });
-exports.createTransaction = catchAsync(async (req, res, next) => {
+exports.createTransactionDeposit = catchAsync(async (req, res, next) => {
   process.env.TZ = "Asia/Ho_Chi_Minh";
   if (!req.body.user) req.body.user = req.user.id;
   // const registration = (await RegistrationServices.createRegistration(req.body)).data;
@@ -28,7 +31,9 @@ exports.createTransaction = catchAsync(async (req, res, next) => {
 
   // req.body.registration = registration._id;
 
-  const transaction = await TransactionServices.createTransaction(req.body);
+  const transaction = await TransactionServices.createTransactionDeposit(
+    req.body
+  );
   let date = new Date();
   let createDate = moment(date).format("YYYYMMDDHHmmss");
 
@@ -101,6 +106,7 @@ exports.executeTransaction = catchAsync(async (req, res, next) => {
 
   const transaction = (await TransactionServices.getTransactionById(orderId))
     .data;
+  console.log("transaction",transaction)
   vnp_Params = sortObject(vnp_Params);
   let secretKey = config.get("vnp_HashSecret");
   let querystring = require("qs");
@@ -126,14 +132,15 @@ exports.executeTransaction = catchAsync(async (req, res, next) => {
     let redirect_Url = `${process.env.CLIENT_URL}/home`;
     if (checkOrderId) {
       if (checkAmount) {
-        if (paymentStatus === "pending" || paymentStatus === "failed") {
+        if (paymentStatus === "processing" || paymentStatus === "failed") {
           //kiểm tra tình trạng giao dịch trước khi cập nhật tình trạng thanh toán
-          let status = "pending";
+          let status = "processing";
           if (rspCode == "00") {
             //thanh cong
             //paymentStatus = '1'
             // Ở đây cập nhật trạng thái giao dịch thanh toán thành công vào CSDL của bạn
             status = "success";
+            await TransactionServices.handleSuccessDeposit(transaction)
           } else {
             //that bai
             //paymentStatus = '2'

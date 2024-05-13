@@ -27,7 +27,7 @@ router.post(
   "/deposit",
   authController.protect,
   //authController.restrictTo("business", "admin"),
-  transactionController.createTransaction
+  transactionController.createTransactionDeposit
 );
 
 // router.get('/get-events', eventController.getAllEvents)

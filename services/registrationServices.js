@@ -37,6 +37,45 @@ exports.getRegistrationsByEventId = (eventId, query) => {
   });
 };
 
+exports.getMyRegistrations = (userId, query) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const features = new APIFeatures(
+        registrationModel
+          .find({ user: userId })
+          .populate("orders.ticketType")
+          .populate({
+            path: 'event',
+            select: 'title images location detailLocation date startTime endTime' // Specify the fields you want to retrieve
+          })
+          .populate({
+            path: 'user',
+            select: 'firstName lastName' // Specify the fields you want to retrieve
+        }),
+        query
+      )
+        .sort()
+        .paginate();
+
+      let registrations = await features.query;
+      registrations = await registrations.map((registration) => {
+        registration.totalPrice = registration.orders.reduce((acc, order) => {
+          return acc + order.ticketType.price * order.quantity;
+        }, 0);
+        return registration;
+      });
+
+      resolve({
+        status: "success",
+        results: registrations.length,
+        data: registrations,
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
 exports.getAllRegistrations = (query) => {
   return new Promise(async (resolve, reject) => {
     try {

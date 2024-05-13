@@ -2,19 +2,42 @@ const Transaction = require("../models/transactionModel");
 const AppError = require("./../utils/appError");
 const APIFeatures = require("./../utils/apiFeatures");
 const mongoose = require("mongoose");
+const User = require("../models/userModel");
 
-exports.createTransaction = (data) => {
+exports.createTransactionDeposit = (data) => {
   return new Promise(async (resolve, reject) => {
     try {
       if (!data.amount) {
         reject(new AppError(`Please fill all required fields`, 400));
       }
 
+      data.transaction_type = "deposit";
+
       const transaction = await Transaction.create(data);
 
       resolve({
         status: "success",
         data: transaction,
+      });
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
+
+exports.handleSuccessDeposit = (transaction) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const user = await User.findById(transaction.user);
+      if (!user) {
+        reject(new AppError(`User not found`, 400));
+      }
+      console.log("Userrr", user);
+      await user.updateOne({
+        balance: user.balance + transaction.amount,
+      });
+      resolve({
+        status: "success",
       });
     } catch (err) {
       reject(err);
@@ -63,6 +86,37 @@ exports.changeTransactionStatus = (id, status) => {
       resolve({
         status: "success",
         data: transaction,
+      });
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
+
+exports.getAllTransactions = (query) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const features = new APIFeatures(
+        Transaction.find()
+          .populate({
+            path: "user",
+            select: "profile", // Specify the fields you want to retrieve
+          })
+          .populate({
+            path: "organizer",
+            select: "profile", // Specify the fields you want to retrieve
+          }),
+        query
+      )
+        .sort()
+        .paginate();
+
+      const transactions = await features.query;
+
+      resolve({
+        status: "success",
+        results: transactions.length,
+        data: transactions,
       });
     } catch (err) {
       reject(err);

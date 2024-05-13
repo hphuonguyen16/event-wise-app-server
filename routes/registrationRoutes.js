@@ -7,6 +7,8 @@ const router = express.Router();
 
 router.use(authController.protect);
 
+router.route("/my-registrations").get(registrationController.getMyRegistrations);
+
 router
   .route("/")
   .get(registrationController.getAllRegistrations)

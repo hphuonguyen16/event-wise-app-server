@@ -19,6 +19,8 @@ const ticketTypeRouter = require("./routes/ticketTypeRoutes");
 const categoryRouter = require("./routes/categoryRoutes");
 const registrationRouter = require("./routes/registrationRoutes");
 const transactionRouter = require("./routes/transactionRoutes");
+const bankAccountRouter = require("./routes/bankAccountRoutes");
+const withdrawalRequestRouter = require("./routes/withdrawalRoutes");
 
 const cors = require("cors");
 
@@ -116,6 +118,8 @@ app.use("/api/v1/ticket-types", ticketTypeRouter);
 app.use("/api/v1/categories", categoryRouter);
 app.use("/api/v1/registrations", registrationRouter);
 app.use("/api/v1/transactions", transactionRouter);
+app.use("/api/v1/bank-accounts", bankAccountRouter);
+app.use("/api/v1/withdrawal-requests", withdrawalRequestRouter);
 
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));

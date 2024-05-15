@@ -6,6 +6,7 @@ const { event } = require("jquery");
 const EventModel = require("../models/eventModel");
 const UserModel = require("../models/userModel");
 const ProfileModel = require("../models/profileModel");
+const TicketTypeModel = require("../models/ticketTypeModel");
 
 exports.getMyEvents = (userId, query) => {
   return new Promise(async (resolve, reject) => {
@@ -116,6 +117,41 @@ exports.searchEventsOrOrganizers = (queryString) => {
           organizers: organizerSearchResult,
         },
       });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+
+exports.changeTicketStatusEvent = (ticketStatus, id) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (!ticketStatus) {
+        reject(new AppError("Ticket status is required", 400));
+      }
+      if (ticketStatus === "Cancelled" || ticketStatus === "Postponed") {
+        //update ticket type ends date
+        await TicketTypeModel.updateMany(
+          { event: id },
+          { endDate: new Date() }
+        );
+      }
+      const event = await Event.findByIdAndUpdate(
+        id,
+        {
+          ticketStatus: ticketStatus,
+        },
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
+      resolve({
+        status: "success",
+        data: event,
+      });
+      
     } catch (error) {
       reject(error);
     }

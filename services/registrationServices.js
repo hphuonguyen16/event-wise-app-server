@@ -4,6 +4,7 @@ const registrationModel = require("../models/registrationModel");
 const userModel = require("../models/userModel");
 const ticketTypeModel = require("../models/ticketTypeModel");
 const eventModel = require("../models/eventModel");
+const transactionModel = require("../models/transactionModel");
 
 exports.getRegistrationsByEventId = (eventId, query) => {
   return new Promise(async (resolve, reject) => {
@@ -45,13 +46,14 @@ exports.getMyRegistrations = (userId, query) => {
           .find({ user: userId })
           .populate("orders.ticketType")
           .populate({
-            path: 'event',
-            select: 'title images location detailLocation date startTime endTime' // Specify the fields you want to retrieve
+            path: "event",
+            select:
+              "title images location detailLocation date startTime endTime", // Specify the fields you want to retrieve
           })
           .populate({
-            path: 'user',
-            select: 'firstName lastName' // Specify the fields you want to retrieve
-        }),
+            path: "user",
+            select: "firstName lastName", // Specify the fields you want to retrieve
+          }),
         query
       )
         .sort()
@@ -108,6 +110,7 @@ exports.getAllRegistrations = (query) => {
 exports.createRegistration = (registrationData) => {
   return new Promise(async (resolve, reject) => {
     try {
+      let totalPrice = 0;
       const ticketTypeIds = registrationData.orders.map(
         (order) => order.ticketType
       );
@@ -116,8 +119,6 @@ exports.createRegistration = (registrationData) => {
       const ticketTypes = await ticketTypeModel.find({
         _id: { $in: ticketTypeIds },
       });
-
-      console.log("ticketTypes", ticketTypes);
 
       for (const order of registrationData.orders) {
         //check order is in minimum and maximum quantity
@@ -145,11 +146,58 @@ exports.createRegistration = (registrationData) => {
             `Not enough available tickets for ticket type ${ticketType._id}.`
           );
         }
+        totalPrice += ticketType.price * order.quantity;
       }
+
+      if (registrationData.user) {
+        const user = await userModel.findById(registrationData.user);
+        if (!user) {
+          throw new AppError("User not found.", 404);
+        }
+
+        if (user.balance < totalPrice || totalPrice <= 0) {
+          throw new AppError("Insufficient balance.", 400);
+        }
+
+        await userModel.findByIdAndUpdate(
+          registrationData.user,
+          {
+            $inc: { balance: -totalPrice },
+          },
+          {
+            new: true,
+            runValidators: true,
+          }
+        );
+      }
+
+      //increase balance of organizer
+      const event = await eventModel.findById(registrationData.event);
+      if (!event) {
+        throw new AppError("Event not found.", 404);
+      }
+      const organizer = await userModel.findById(event.user);
+
+      console.log(organizer);
+
+      if (!organizer) {
+        throw new AppError("Organizer not found.", 404);
+      }
+
+      await userModel.findByIdAndUpdate(
+        organizer._id,
+        {
+          $inc: { balance: totalPrice },
+        },
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
+
+      //create transaction
       // Create the registration
       const registration = await registrationModel.create(registrationData);
-
-      //update revenue for event
 
       const promises = registrationData.orders.map(async (order) => {
         await ticketTypeModel.updateOne(
@@ -161,21 +209,14 @@ exports.createRegistration = (registrationData) => {
       });
       await Promise.all(promises);
 
-      // // const totalPrice = registrationData.orders.reduce((acc, order) => {
-      // //   return acc + order.ticketType.price * order.quantity;
-      // // }, 0);
-
-      // // await eventModel.findByIdAndUpdate(
-      // //   registrationData.event,
-      // //   {
-      // //     $inc: { revenue: totalPrice },
-      // //   },
-      // //   {
-      // //     new: true,
-      // //     runValidators: true,
-      // //   }
-      // // );
-      // console.log(totalPrice);
+      await transactionModel.create({
+        user: registrationData.user,
+        organizer: registrationData.organizer,
+        registration:  registration._id,
+        amount: totalPrice,
+        transaction_type: "payment",
+        status: "success",
+      });
 
       resolve({
         status: "success",

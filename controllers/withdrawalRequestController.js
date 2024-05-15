@@ -9,6 +9,7 @@ const withdrawalServices = require("./../services/withdrawalServices");
 const AppError = require("../utils/appError");
 const factory = require("./../controllers/handlerFactory");
 const bankAccount = require("../models/bankAccountModel");
+const withdrawalRequest = require("../models/withDrawalRequest");
 
 exports.createWithdrawalRequest = catchAsync(async (req, res, next) => {
   req.body.user_id = req.user.id;
@@ -16,8 +17,17 @@ exports.createWithdrawalRequest = catchAsync(async (req, res, next) => {
   res.status(200).json(data);
 });
 
-exports.createBankAccount = catchAsync(async (req, res, next) => {
-  req.body.user = req.user.id;
-  const data = await bankAccount.create(req.body);
+exports.getAllWithdrawalRequests = catchAsync(async (req, res, next) => {
+  const data = await withdrawalServices.getAllWithdrawalRequests(req.query);
   res.status(200).json(data);
 });
+
+exports.fulfillWithdrawalRequest = catchAsync(async (req, res, next) => {
+  const data = await withdrawalServices.fulfillWithdrawalRequest(req.params.id);
+  res.status(200).json(data);
+});
+
+exports.cancelWithdrawalRequest = catchAsync(async (req, res, next) => {
+  const data = await withdrawalServices.cancelWithdrawalRequest(req.params.id);
+  res.status(200).json(data);
+})

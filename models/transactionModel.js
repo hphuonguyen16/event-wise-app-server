@@ -27,7 +27,7 @@ const TransactionSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["processing", "success", "failed"],
+      enum: ["processing", "success", "failed", "canceled"],
       default: "processing",
     },
     transaction_type: {

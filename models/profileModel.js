@@ -21,9 +21,9 @@ const Profileschema = new mongoose.Schema(
       trim: true,
       validate: {
         validator: function (value) {
-          return /^[a-zA-Z0-9]+$/.test(value);
+          return /^[a-zA-Z0-9 ]+$/.test(value);
         },
-        message: "Name only contains characters and numbers",
+        message: "Name only contains characters, numbers and space",
       },
     },
     lastname: {
@@ -36,18 +36,6 @@ const Profileschema = new mongoose.Schema(
           return /^[a-zA-Z0-9]+$/.test(value);
         },
         message: "Lastname only contains characters, numbers and underscore",
-      },
-    },
-    name: {
-      type: String,
-      maxLength: 40,
-      minLength: 2,
-      trim: true,
-      validate: {
-        validator: function (value) {
-          return /^[a-zA-Z0-9]+$/.test(value);
-        },
-        message: "Name only contains characters, numbers and underscore",
       },
     },
     gender: {

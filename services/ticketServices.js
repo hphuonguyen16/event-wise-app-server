@@ -3,6 +3,8 @@ const APIFeatures = require("./../utils/apiFeatures");
 const { findUserById } = require("./authServices");
 const TicketTypeModel = require("../models/ticketTypeModel");
 const RegistrationModel = require("../models/registrationModel");
+const EventModel = require("../models/eventModel");
+const moment = require("moment");
 
 exports.getTicketTypesByEventId = (eventId, query) => {
   return new Promise(async (resolve, reject) => {
@@ -63,6 +65,79 @@ exports.updateTicketTypeSoldCount = (ticketTypeId) => {
       ticketType.sold = ticketType.sold + 1;
       await ticketType.save();
 
+      resolve({
+        status: "success",
+        data: ticketType,
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+exports.createTicketType = (data) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const event = await EventModel.findById(data.event);
+      if (!event) {
+        reject(new AppError("Event not found", 404));
+      }
+
+      if (
+        moment(data.startDate).isAfter(event.date) ||
+        moment(data.endDate).isAfter(event.date)
+      ) {
+        reject(
+          new AppError(
+            "Ticket Type start date or end date cannot be after the event date",
+            400
+          )
+        );
+      }
+
+      const ticketType = await TicketTypeModel.create(data);
+      // event.status = "ticketing";
+      // await event.save();
+      resolve({
+        status: "success",
+        data: ticketType,
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+exports.updateTicketType = (ticketTypeId, data) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const event = await EventModel.findById(data.event);
+      if (!event) {
+        reject(new AppError("Event not found", 404));
+      }
+
+      if (
+        moment(data.startDate).isAfter(event.date) ||
+        moment(data.endDate).isAfter(event.date)
+      ) {
+        reject(
+          new AppError(
+            "Ticket Type start date or end date cannot be after the event date",
+            400
+          )
+        );
+      }
+      const ticketType = await TicketTypeModel.findByIdAndUpdate(
+        ticketTypeId,
+        data,
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
+      if (!ticketType) {
+        reject(new AppError("Ticket Type not found", 404));
+      }
       resolve({
         status: "success",
         data: ticketType,

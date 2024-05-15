@@ -38,7 +38,7 @@ exports.updateUserRefreshToken = (userId, refreshToken) => {
 exports.findUserByRefreshToken = (refreshToken) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const user = await User.find({ refreshToken: refreshToken });
+      const user = await UserModel.find({ refreshToken: refreshToken });
       if (!user) {
         reject(new AppError("User not found", 404));
       }
@@ -56,8 +56,7 @@ exports.signup = (data) => {
         !data.email ||
         !data.password ||
         !data.passwordConfirm ||
-        !data.firstname ||
-        !data.lastname 
+        !data.name
       ) {
         reject(new AppError("Please fill in all required fields", 400));
       } else if (data.password !== data.passwordConfirm) {
@@ -175,4 +174,3 @@ let checkUserEmail = (userEmail) => {
     }
   });
 };
-

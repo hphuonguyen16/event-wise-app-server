@@ -34,6 +34,14 @@ exports.searchEventsOrOrganizers = catchAsync(async (req, res) => {
   res.status(200).json(data);
 });
 
+exports.changeTicketStatusEvent = catchAsync(async (req, res) => {
+  const data = await EventService.changeTicketStatusEvent(
+    req.body.ticketStatus,
+    req.params.id
+  );
+  res.status(200).json(data);
+});
+
 
 exports.getAllEvents = handlerFactory.getAll(EventModel);
 exports.getEvent = handlerFactory.getOne(EventModel);

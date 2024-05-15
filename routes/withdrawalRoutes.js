@@ -5,9 +5,18 @@ const authController = require("./../controllers/authController");
 const withdrawalRequestController = require("./../controllers/withdrawalRequestController");
 
 router.use(authController.protect);
- router
+router
   .route("/")
-  .post(withdrawalRequestController.createWithdrawalRequest);
+  .post(withdrawalRequestController.createWithdrawalRequest)
+  .get(withdrawalRequestController.getAllWithdrawalRequests);
+
+router
+  .route("/:id/fulfill")
+  .post(withdrawalRequestController.fulfillWithdrawalRequest);
+
+router
+  .route("/:id/cancel")
+  .post(withdrawalRequestController.cancelWithdrawalRequest);
 
 // router.get('/get-events', eventController.getAllEvents)
 

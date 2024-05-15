@@ -100,11 +100,11 @@ exports.getAllTransactions = (query) => {
         Transaction.find()
           .populate({
             path: "user",
-            select: "profile", // Specify the fields you want to retrieve
+            select: "profile email", // Specify the fields you want to retrieve
           })
           .populate({
             path: "organizer",
-            select: "profile", // Specify the fields you want to retrieve
+            select: "profile email", // Specify the fields you want to retrieve
           }),
         query
       )

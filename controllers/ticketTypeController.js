@@ -10,9 +10,15 @@ exports.getTicketTypesByEventId = catchAsync(async (req, res) => {
   res.status(200).json(data);
 });
 
-exports.createTicketType = handlerFactory.createOne(TicketTypeModel);
+exports.createTicketType = catchAsync(async (req, res) => {
+  const data = await TicketTypeService.createTicketType(req.body);
+  res.status(201).json(data);
+});
 exports.getTicketType = handlerFactory.getOne(TicketTypeModel);
-exports.updateTicketType = handlerFactory.updateOne(TicketTypeModel);
+exports.updateTicketType = catchAsync(async (req, res) => {
+  const data = await TicketTypeService.updateTicketType(req.params.id, req.body);
+  res.status(200).json(data);
+});
 exports.deleteTicketType = handlerFactory.deleteOne(TicketTypeModel);
 exports.getAllTicketTypes = handlerFactory.getAll(TicketTypeModel);
 

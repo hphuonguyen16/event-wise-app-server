@@ -9,13 +9,15 @@ exports.findUserById = (userId) => {
   return new Promise(async (resolve, reject) => {
     try {
       const user = await UserModel.findById(userId).populate("profile");
-      if (!user)
+      if (!user) {
         reject(
           new AppError(
             "The user belonging to this token does no longer exist.",
             404
           )
         );
+        return;
+      }
       resolve(user);
     } catch (error) {
       reject(error);
@@ -41,6 +43,7 @@ exports.findUserByRefreshToken = (refreshToken) => {
       const user = await UserModel.find({ refreshToken: refreshToken });
       if (!user) {
         reject(new AppError("User not found", 404));
+        return;
       }
       resolve(user);
     } catch (error) {
@@ -59,8 +62,10 @@ exports.signup = (data) => {
         !data.name
       ) {
         reject(new AppError("Please fill in all required fields", 400));
+        return;
       } else if (data.password !== data.passwordConfirm) {
         reject(new AppError("Password confirmation is incorrect", 400));
+        return;
       } else {
         const verifyToken = crypto.randomBytes(32).toString("hex");
         const user = await UserModel.create({
@@ -103,6 +108,7 @@ exports.login = (data) => {
       const { email, password } = data;
       if (!email || !password) {
         reject(new AppError("Please provide email and password!", 400));
+        return;
       }
       // 2) Check if user exists && password is correct
       const user = await UserModel.findOne({ email })
@@ -111,6 +117,7 @@ exports.login = (data) => {
 
       if (!user || !(await user.correctPassword(password, user.password))) {
         reject(new AppError("Incorrect email or password", 401));
+        return;
       }
       if (user.isActived === false) {
         reject(
@@ -119,6 +126,7 @@ exports.login = (data) => {
             401
           )
         );
+        return;
       }
       if (!user.verify) {
         if (!user.verifyToken) {
@@ -132,6 +140,7 @@ exports.login = (data) => {
         reject(
           new AppError("An Email sent to your account! Please verify", 401)
         );
+        return;
       }
       resolve(user);
     } catch (error) {
@@ -144,8 +153,14 @@ exports.verifyToken = (userId) => {
   return new Promise(async (resolve, reject) => {
     try {
       const user = await UserModel.findOne({ _id: userId });
-      if (!user) reject(new AppError("User not found", 404));
-      if (!user.verifyToken) reject(new AppError("Token not found", 404));
+      if (!user) {
+        reject(new AppError("User not found", 404));
+        return;
+       }
+      if (!user.verifyToken) {
+        reject(new AppError("Token not found", 404)) 
+        return;
+      }
 
       const currentUser = await UserModel.findByIdAndUpdate(user._id, {
         verify: true,

@@ -51,11 +51,13 @@ exports.getBankAccountByUserId = (user_id) => {
     try {
       if (!user_id) {
         reject(new AppError(`Empty Id`, 400));
+        return;
       }
 
       const bankAccount = await BankAccount.findOne({ user: user_id });
       if (!bankAccount) {
         reject(new AppError(`Bank Account not found`, 404));
+        return;
       }
       resolve({
         status: "success",

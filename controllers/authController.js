@@ -23,27 +23,31 @@ const createAccessToken = (user, res) => {
 };
 
 const createRefreshToken = async (user, res) => {
-  const refreshToken = jwt.sign(
-    { id: user.id },
-    process.env.JWT_REFRESH_SECRET,
-    {
-      expiresIn: "10d",
-    }
-  );
-  await authService.updateUserRefreshToken(user.id, refreshToken);
-  const cookieOptionsRefresh = {
-    expires: new Date(
-      Date.now() +
+  try {
+    const refreshToken = jwt.sign(
+      { id: user.id },
+      process.env.JWT_REFRESH_SECRET,
+      {
+        expiresIn: "10d",
+      }
+    );
+    await authService.updateUserRefreshToken(user.id, refreshToken);
+    const cookieOptionsRefresh = {
+      expires: new Date(
+        Date.now() +
         process.env.JWT_COOKIE_REFRESH_TOKEN_EXPIRES_IN * 24 * 60 * 60 * 1000
-    ),
-    httpOnly: true,
-    secure: false,
-    sameSite: "none",
-  };
-  if (process.env.NODE_ENV === "production")
-    cookieOptionsRefresh.sameSite = "none";
-  if (process.env.NODE_ENV === "production") cookieOptionsRefresh.secure = true;
-  res.cookie("refresh", refreshToken, cookieOptionsRefresh);
+      ),
+      httpOnly: true,
+      secure: false,
+      sameSite: "none",
+    };
+    if (process.env.NODE_ENV === "production")
+      cookieOptionsRefresh.sameSite = "none";
+    if (process.env.NODE_ENV === "production") cookieOptionsRefresh.secure = true;
+    res.cookie("refresh", refreshToken, cookieOptionsRefresh);
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const createSendToken = async (user, statusCode, res) => {
@@ -63,11 +67,13 @@ const createSendToken = async (user, statusCode, res) => {
 
 exports.refreshToken = catchAsync(async (req, res, next) => {
   const cookies = req.cookies;
+
   if (!cookies?.refresh)
     return next(
       new AppError("You are not logged in! Please log in to get access.", 401)
     );
   const refreshToken = cookies.refresh;
+  console.log("refreshToken", refreshToken);
   const user = findUserByRefreshToken(refreshToken);
   const decoded = await promisify(jwt.verify)(
     refreshToken,

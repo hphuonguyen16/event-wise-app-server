@@ -60,6 +60,7 @@ exports.updateTicketTypeSoldCount = (ticketTypeId) => {
       const ticketType = await TicketTypeModel.findById(ticketTypeId);
       if (!ticketType) {
         reject(new AppError("Ticket Type not found", 404));
+        return;
       }
 
       ticketType.sold = ticketType.sold + 1;
@@ -81,6 +82,7 @@ exports.createTicketType = (data) => {
       const event = await EventModel.findById(data.event);
       if (!event) {
         reject(new AppError("Event not found", 404));
+        return;
       }
 
       if (
@@ -92,7 +94,9 @@ exports.createTicketType = (data) => {
             "Ticket Type start date or end date cannot be after the event date",
             400
           )
+
         );
+        return;
       }
 
       const ticketType = await TicketTypeModel.create(data);
@@ -114,6 +118,7 @@ exports.updateTicketType = (ticketTypeId, data) => {
       const event = await EventModel.findById(data.event);
       if (!event) {
         reject(new AppError("Event not found", 404));
+        return;
       }
 
       if (
@@ -126,6 +131,7 @@ exports.updateTicketType = (ticketTypeId, data) => {
             400
           )
         );
+        return;
       }
       const ticketType = await TicketTypeModel.findByIdAndUpdate(
         ticketTypeId,
@@ -137,6 +143,7 @@ exports.updateTicketType = (ticketTypeId, data) => {
       );
       if (!ticketType) {
         reject(new AppError("Ticket Type not found", 404));
+        return;
       }
       resolve({
         status: "success",

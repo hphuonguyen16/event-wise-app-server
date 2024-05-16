@@ -65,7 +65,7 @@ const EventSchema = new mongoose.Schema(
     },
     ticketStatus: {
       type: String,
-      enum: ["On Sale", "Upcoming", "Cancelled", "Postponed"],
+      enum: ["On Sale", "Upcoming", "Cancelled", "Postponed", "Completed"],
     },
     revenue: {
       type: Number,
@@ -86,12 +86,19 @@ async function calculateTicketStatus(event) {
   const now = new Date();
   const tickets = await TicketType.find({ event: event._id });
 
+  console.log("tickets", tickets);
+  console.log("now", now);
+  console.log("event", tickets[0].endDate >= now);
   if (
     tickets.some((ticket) => ticket.endDate >= now && ticket.startDate <= now)
   ) {
     return "On Sale";
   } else if (tickets.every((ticket) => ticket.startDate > now)) {
     return "Upcoming";
+  } else if (event.date < now) {
+    return "Completed";
+  } else {
+    return null;
   }
 }
 
@@ -103,13 +110,20 @@ EventSchema.pre(/^find/, function (next) {
 
 EventSchema.post("findOne", async function (doc) {
   if (doc) {
-    doc.ticketStatus = await calculateTicketStatus(doc);
+    const ticketStatus = await calculateTicketStatus(doc);
+    if (ticketStatus) {
+      doc.ticketStatus = ticketStatus;
+    }
   }
 });
 
 EventSchema.post("find", async function (docs) {
+  console.log("111111111111");
   for (const doc of docs) {
-    doc.ticketStatus = await calculateTicketStatus(doc);
+    const ticketStatus = await calculateTicketStatus(doc);
+    if (ticketStatus) {
+      doc.ticketStatus = ticketStatus;
+    }
   }
 });
 

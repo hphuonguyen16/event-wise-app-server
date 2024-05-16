@@ -7,18 +7,16 @@ exports.getProfileByID = (id) => {
     try {
       if (!id) {
         reject(new AppError(`Missing parameter`, 400));
+        return;
       } else {
-        let profile = await ProfileModel.findOne({ user: id });
-        if (!profile) {
-          reject(new AppError(`User not found`, 400));
-        } else {
-          resolve({
-            status: "Success",
-            data: profile,
-          });
-        }
+        let user = await UserModel.findById(id)
+          .select("-password")
+          .populate("profile");
+        resolve({
+          status: "Success",
+          data: user,
+        });
       }
-      console.log(profile);
     } catch (error) {
       reject(error);
     }
@@ -29,6 +27,7 @@ exports.checkMyId = (myId, id) => {
     try {
       if (!id) {
         reject(new AppError(`Missing parameter`, 400));
+        return;
       } else {
         let check;
         if (myId === id) {
@@ -50,6 +49,7 @@ exports.updateMe = (id, data) => {
     try {
       if (!id) {
         reject(new AppError(`Missing parameter`, 400));
+        return;
       } else {
         await ProfileModel.findOneAndUpdate(
           { user: id },
@@ -84,6 +84,7 @@ exports.lockOrUnlockAccount = (id) => {
     try {
       if (!id) {
         reject(new AppError(`Missing parameter`, 400));
+        return;
       } else {
         let account = await UserModel.findById(id);
         if (account) {

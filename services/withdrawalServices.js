@@ -11,15 +11,18 @@ exports.createWithdrawalRequest = ({ user_id, amount, bank_account }) => {
       const user = await User.findById(user_id);
       if (!user) {
         reject(new AppError(`User not found`, 400));
+        return;
       }
       //   if (user.balance < amount || amount <= 0) {
       //     reject(new AppError(`Insufficent amount`, 400));
       //   }
       if (amount <= 0) {
         reject(new AppError(`Amount must be greater than 0`, 400));
+        return;
       }
       if (user.balance < amount) {
         reject(new AppError(`Your balance is not enough to withdraw`, 400));
+        return;
       }
       const transaction = await Transaction.create({
         user: user_id,
@@ -93,6 +96,7 @@ exports.fulfillWithdrawalRequest = async (withdrawal_request_id) => {
     );
     if (!withdrawal_request) {
       reject(new AppError(`Request not found`, 404));
+      return;
     }
 
     const transaction = await Transaction.findById(
@@ -100,9 +104,11 @@ exports.fulfillWithdrawalRequest = async (withdrawal_request_id) => {
     );
     if (!transaction) {
       reject(new AppError(`Transaction not found`, 404));
+      return;
     }
     if (transaction.status !== "processing") {
       reject(new AppError(` "Can't execute this transaction"`, 400));
+      return;
     }
 
     const session = await startSession();
@@ -122,9 +128,11 @@ exports.fulfillWithdrawalRequest = async (withdrawal_request_id) => {
 
       if (!user) {
         reject(new AppError(`User not found`, 404));
+        return;
       }
       if (user.balance < 0) {
         reject(new AppError(`Insufficent balance`, 400));
+        return;
       }
 
       await session.commitTransaction();
@@ -152,9 +160,11 @@ exports.cancelWithdrawalRequest = async (withdrawal_request_id) => {
     ).populate("transaction");
     if (!withdrawal_request) {
       reject(new AppError(`Request not found`, 404));
+      return;
     }
     if (withdrawal_request.transaction.status !== "processing") {
       reject(new AppError(`Can't execute this transaction`, 400));
+      return;
     }
     await Transaction.findByIdAndUpdate(withdrawal_request.transaction, {
       status: "canceled",

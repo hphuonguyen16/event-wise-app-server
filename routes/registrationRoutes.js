@@ -7,7 +7,9 @@ const router = express.Router();
 
 router.use(authController.protect);
 
-router.route("/my-registrations").get(registrationController.getMyRegistrations);
+router
+  .route("/my-registrations")
+  .get(registrationController.getMyRegistrations);
 
 router
   .route("/")
@@ -18,7 +20,15 @@ router
   .route("/:id")
   .get(registrationController.getRegistration)
   .put(registrationController.updateRegistration)
-    .delete(registrationController.deleteRegistration);
-  
+  .delete(registrationController.deleteRegistration)
+  .put(authController.protect, registrationController.refundRegistration);
+
+router
+  .route("/:id/refund")
+  .put(authController.protect, registrationController.refundRegistration);
+
+router
+  .route("/bulk-refund")
+  .post(authController.protect, registrationController.bulkRefundRegistrations);
 
 module.exports = router;

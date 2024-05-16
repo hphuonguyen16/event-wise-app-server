@@ -45,6 +45,7 @@ exports.publishEvent = (data) => {
 
       if (!event) {
         return reject(new AppError("No event found with that ID", 404));
+        return;
       }
 
       resolve({
@@ -98,8 +99,6 @@ exports.getEventsByUserId = (userId) => {
 exports.searchEventsOrOrganizers = (queryString) => {
   return new Promise(async (resolve, reject) => {
     try {
-      // Search for events by title
-      console.log(queryString);
 
       const eventSearchResult = await EventModel.find({
         title: { $regex: new RegExp(queryString, "i") }, // Case-insensitive search
@@ -129,6 +128,7 @@ exports.changeTicketStatusEvent = (ticketStatus, id) => {
     try {
       if (!ticketStatus) {
         reject(new AppError("Ticket status is required", 400));
+        return;
       }
       if (ticketStatus === "Cancelled" || ticketStatus === "Postponed") {
         //update ticket type ends date
@@ -136,6 +136,27 @@ exports.changeTicketStatusEvent = (ticketStatus, id) => {
           { event: id },
           { endDate: new Date() }
         );
+      }
+      if (ticketStatus === "On Sale") {
+        //update ticket type ends date
+        //check ticket type start date and end date
+        const ticketTypes = await TicketTypeModel.find({ event: id });
+        const event = await Event.findById(id);
+        const now = new Date();
+        if (event.date < now) {
+          reject(new AppError("Event date is passed", 400));
+          return;
+        }
+
+        //check invalid ticket type
+        const invalidTicketTypes = ticketTypes.filter(
+          (ticket) =>
+            ticket.startDate > event.date || ticket.endDate > event.date || ticket.endDate <= now
+        );
+        if (invalidTicketTypes.length > 0) {
+          reject(new AppError("Ticket type date is invalid! Please adjust your ticket type date", 400));
+          return;
+        }
       }
       const event = await Event.findByIdAndUpdate(
         id,
@@ -157,3 +178,5 @@ exports.changeTicketStatusEvent = (ticketStatus, id) => {
     }
   });
 };
+
+

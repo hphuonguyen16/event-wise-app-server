@@ -9,6 +9,7 @@ exports.createTransactionDeposit = (data) => {
     try {
       if (!data.amount) {
         reject(new AppError(`Please fill all required fields`, 400));
+        return;
       }
 
       data.transaction_type = "deposit";
@@ -31,8 +32,8 @@ exports.handleSuccessDeposit = (transaction) => {
       const user = await User.findById(transaction.user);
       if (!user) {
         reject(new AppError(`User not found`, 400));
+        return;
       }
-      console.log("Userrr", user);
       await user.updateOne({
         balance: user.balance + transaction.amount,
       });
@@ -50,11 +51,13 @@ exports.getTransactionById = (id) => {
     try {
       if (!id) {
         reject(new AppError(`Empty Id`, 400));
+        return;
       }
 
       const transaction = await Transaction.findById(id);
       if (!transaction) {
         reject(new AppError(`Transaction not found`, 404));
+        return;
       }
       resolve({
         status: "success",
@@ -70,6 +73,7 @@ exports.changeTransactionStatus = (id, status) => {
     try {
       if (!id) {
         reject(new AppError(`Empty Id`, 400));
+        return;
       }
 
       const transaction = await Transaction.findByIdAndUpdate(
@@ -81,6 +85,7 @@ exports.changeTransactionStatus = (id, status) => {
       );
       if (!transaction) {
         reject(new AppError(`Transaction not found`, 404));
+        return;
       }
 
       resolve({
@@ -158,3 +163,4 @@ exports.getTransactionByBusiness = (id, query) => {
     }
   });
 };
+

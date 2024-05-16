@@ -21,7 +21,6 @@ exports.getPopularCategories = () => {
           $limit: 8,
         },
       ]);
-        console.log(categories);
         
         //get the category details and if not enough categories are found, get more so that the total is 8
         let categoryDetails = [];
@@ -31,7 +30,6 @@ exports.getPopularCategories = () => {
                 categoryDetails.push(categoryDetail);
             }
         }
-        console.log(categoryDetails);
         if (categoryDetails.length < 8) {
             let moreCategories = await CategoryModel.find().limit(8 - categoryDetails.length);
             categoryDetails = categoryDetails.concat(moreCategories);

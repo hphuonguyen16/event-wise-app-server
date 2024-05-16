@@ -178,8 +178,6 @@ exports.createRegistration = (registrationData) => {
       }
       const organizer = await userModel.findById(event.user);
 
-      console.log(organizer);
-
       if (!organizer) {
         throw new AppError("Organizer not found.", 404);
       }
@@ -212,7 +210,7 @@ exports.createRegistration = (registrationData) => {
       await transactionModel.create({
         user: registrationData.user,
         organizer: registrationData.organizer,
-        registration:  registration._id,
+        registration: registration._id,
         amount: totalPrice,
         transaction_type: "payment",
         status: "success",
@@ -221,6 +219,143 @@ exports.createRegistration = (registrationData) => {
       resolve({
         status: "success",
         data: registration,
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+exports.refundRegistration = ({ registrationId, organizer }) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const registration = await registrationModel.findById(registrationId);
+
+      if (!registration) {
+        throw new AppError("Registration not found.", 404);
+      }
+
+      let totalPrice = 0;
+
+      for (const order of registration.orders) {
+        const ticketType = await ticketTypeModel.findById(order.ticketType);
+        totalPrice += ticketType.price * order.quantity;
+      }
+
+      const user = await userModel.findById(registration.user);
+      if (!user) {
+        throw new AppError("User not found.", 404);
+      }
+
+      await userModel.findByIdAndUpdate(
+        user._id,
+        {
+          $inc: { balance: totalPrice },
+        },
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
+
+      // decrease balance of organizer
+      const organizer = await userModel.findById(organizer);
+      if (!organizer) {
+        throw new AppError("Organizer not found.", 404);
+      }
+
+      await userModel.findByIdAndUpdate(
+        organizer._id,
+        {
+          $inc: { balance: -totalPrice },
+        },
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
+
+      const promises = registration.orders.map(async (order) => {
+        await ticketTypeModel.updateOne(
+          { _id: order.ticketType },
+          {
+            $inc: { sold: -order.quantity },
+          }
+        );
+      });
+      await Promise.all(promises);
+
+      await transactionModel.create({
+        user: registration.user,
+        organizer: organizer,
+        registration: registration._id,
+        amount: totalPrice,
+        transaction_type: "refund",
+        status: "success",
+      });
+
+      resolve({
+        status: "success",
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+
+exports.bulkRefundRegistration = (registrationIds) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const registrations = await registrationModel.find({
+        _id: { $in: registrationIds },
+      });
+
+      for (const registration of registrations) {
+        let totalPrice = 0;
+
+        for (const order of registration.orders) {
+          const ticketType = await ticketTypeModel.findById(order.ticketType);
+          totalPrice += ticketType.price * order.quantity;
+        }
+
+        const user = await userModel.findById(registration.user);
+        if (!user) {
+          throw new AppError("User not found.", 404);
+        }
+
+        await userModel.findByIdAndUpdate(
+          user._id,
+          {
+            $inc: { balance: totalPrice },
+          },
+          {
+            new: true,
+            runValidators: true,
+          }
+        );
+
+        const promises = registration.orders.map(async (order) => {
+          await ticketTypeModel.updateOne(
+            { _id: order.ticketType },
+            {
+              $inc: { sold: -order.quantity },
+            }
+          );
+        });
+        await Promise.all(promises);
+
+        await transactionModel.create({
+          user: registration.user,
+          registration: registration._id,
+          amount: totalPrice,
+          transaction_type: "refund",
+          status: "success",
+        });
+      }
+
+      resolve({
+        status: "success",
       });
     } catch (error) {
       reject(error);

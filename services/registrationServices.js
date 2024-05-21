@@ -5,6 +5,7 @@ const userModel = require("../models/userModel");
 const ticketTypeModel = require("../models/ticketTypeModel");
 const eventModel = require("../models/eventModel");
 const transactionModel = require("../models/transactionModel");
+const mongoose = require("mongoose");
 
 exports.getRegistrationsByEventId = (eventId, query) => {
   return new Promise(async (resolve, reject) => {
@@ -226,13 +227,20 @@ exports.createRegistration = (registrationData) => {
   });
 };
 
-exports.refundRegistration = ({ registrationId, organizer }) => {
+exports.refundRegistration = (registrationId, organizerId) => {
   return new Promise(async (resolve, reject) => {
     try {
       const registration = await registrationModel.findById(registrationId);
 
       if (!registration) {
-        throw new AppError("Registration not found.", 404);
+        throw new AppError("Registration not found.", 400);
+      }
+
+      if (registration.status !== "completed" && registration.status !== "pending_refund") {
+        throw new AppError(
+          "The registration status must be 'completed' or 'pending_refund' to perform this action.",
+          400
+        );
       }
 
       let totalPrice = 0;
@@ -242,6 +250,10 @@ exports.refundRegistration = ({ registrationId, organizer }) => {
         totalPrice += ticketType.price * order.quantity;
       }
 
+      const organizer = await userModel.findById(organizerId);
+      if (organizer.balance < totalPrice) {
+        throw new AppError("Insufficent balance!", 400);
+      }
       const user = await userModel.findById(registration.user);
       if (!user) {
         throw new AppError("User not found.", 404);
@@ -259,7 +271,6 @@ exports.refundRegistration = ({ registrationId, organizer }) => {
       );
 
       // decrease balance of organizer
-      const organizer = await userModel.findById(organizer);
       if (!organizer) {
         throw new AppError("Organizer not found.", 404);
       }
@@ -285,6 +296,10 @@ exports.refundRegistration = ({ registrationId, organizer }) => {
       });
       await Promise.all(promises);
 
+      registration.status = "refunded";
+
+      await registration.save();
+
       await transactionModel.create({
         user: registration.user,
         organizer: organizer,
@@ -303,61 +318,136 @@ exports.refundRegistration = ({ registrationId, organizer }) => {
   });
 };
 
-
-exports.bulkRefundRegistration = (registrationIds) => {
+exports.bulkRefundRegistration = ({ registrationIds, organizerId }) => {
   return new Promise(async (resolve, reject) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
     try {
-      const registrations = await registrationModel.find({
-        _id: { $in: registrationIds },
-      });
+      const registrations = await registrationModel
+        .find({
+          _id: { $in: registrationIds },
+        })
+        .session(session);
+      
+      if (registrations.length === 0) {
+        throw new AppError("No registrations found.", 400);
+      }
+
+      //check the status of registration is completed
+      for (const registration of registrations) {
+        if (registration.orderType !== "online") {
+          throw new AppError(
+            "Only online registrations can be refunded in bulk.",
+            400
+          );
+        }
+        if (
+          registration.status !== "completed" &&
+          registration.status !== "pending_refund"
+        ) {
+          throw new AppError(
+            "The status of the registration must be 'completed' or 'pending_refund' to perform this action.",
+            400
+          );
+        }
+      }
+
+      let refundAmount = 0;
+
+      // Calculate the total refund amount
+      for (const registration of registrations) {
+        let totalPrice = 0;
+
+        for (const order of registration.orders) {
+          const ticketType = await ticketTypeModel
+            .findById(order.ticketType)
+            .session(session);
+          console.log("ticketType", ticketType);
+          totalPrice += ticketType.price * order.quantity;
+        }
+
+        refundAmount += totalPrice;
+      }
+
+      console.log("refundAmount", refundAmount);
+
+      const organizer = await userModel.findById(organizerId).session(session);
+      if (organizer.balance < refundAmount) {
+        throw new AppError("Insufficient balance!", 400);
+      }
 
       for (const registration of registrations) {
         let totalPrice = 0;
 
         for (const order of registration.orders) {
-          const ticketType = await ticketTypeModel.findById(order.ticketType);
+          const ticketType = await ticketTypeModel
+            .findById(order.ticketType)
+            .session(session);
           totalPrice += ticketType.price * order.quantity;
         }
 
-        const user = await userModel.findById(registration.user);
+        const user = await userModel
+          .findById(registration.user)
+          .session(session);
         if (!user) {
-          throw new AppError("User not found.", 404);
+          throw new AppError("User not found.", 400);
         }
 
+        // Refund the user's balance
         await userModel.findByIdAndUpdate(
           user._id,
-          {
-            $inc: { balance: totalPrice },
-          },
-          {
-            new: true,
-            runValidators: true,
-          }
+          { $inc: { balance: totalPrice } },
+          { new: true, runValidators: true, session }
         );
 
+        // Update the ticket sales and order status
         const promises = registration.orders.map(async (order) => {
           await ticketTypeModel.updateOne(
             { _id: order.ticketType },
             {
               $inc: { sold: -order.quantity },
-            }
+            },
+            { session }
           );
         });
+
         await Promise.all(promises);
 
-        await transactionModel.create({
-          user: registration.user,
-          registration: registration._id,
-          amount: totalPrice,
-          transaction_type: "refund",
-          status: "success",
-        });
+        registration.status = "refunded";
+
+        // Save the updated registration with refunded orders
+        await registration.save({ session });
+
+        // Create a transaction record for the refund
+        await transactionModel.create(
+          [
+            {
+              user: registration.user,
+              registration: registration._id,
+              amount: totalPrice,
+              transaction_type: "refund",
+              status: "success",
+            },
+          ],
+          { session }
+        );
       }
 
+      // Update the organizer's balance
+      await userModel.findByIdAndUpdate(
+        organizerId,
+        { $inc: { balance: -refundAmount } },
+        { new: true, runValidators: true, session }
+      );
+
+      await session.commitTransaction();
+      session.endSession();
       resolve({
         status: "success",
       });
     } catch (error) {
+      await session.abortTransaction();
+      session.endSession();
       reject(error);
     }
   });

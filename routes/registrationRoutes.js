@@ -8,6 +8,10 @@ const router = express.Router();
 router.use(authController.protect);
 
 router
+  .route("/bulk-refund")
+  .post(authController.protect, registrationController.bulkRefundRegistrations);
+
+router
   .route("/my-registrations")
   .get(registrationController.getMyRegistrations);
 
@@ -27,8 +31,6 @@ router
   .route("/:id/refund")
   .put(authController.protect, registrationController.refundRegistration);
 
-router
-  .route("/bulk-refund")
-  .post(authController.protect, registrationController.bulkRefundRegistrations);
+
 
 module.exports = router;

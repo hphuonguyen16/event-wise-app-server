@@ -35,8 +35,7 @@ app.use(
     // origin: ["http://localhost:3000", "https://beegin-app.vercel.app"], // Replace with the origin of your client application
     origin: [
       "http://localhost:3000",
-      "https://beegin-app.vercel.app",
-      "https://beegin.vercel.app",
+      "https://event-wise-app.vercel.app",
     ],
     credentials: true, // Allow credentials (cookies) to be sent
   })

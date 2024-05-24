@@ -111,6 +111,16 @@ exports.getAllRegistrations = (query) => {
 exports.createRegistration = (registrationData) => {
   return new Promise(async (resolve, reject) => {
     try {
+      //check if user has registered for the event
+      const existingRegistration = await registrationModel.findOne({
+        user: registrationData.user,
+        event: registrationData.event,
+      });
+
+      if (existingRegistration) {
+        throw new AppError("User has already registered for this event.", 400);
+      }
+
       let totalPrice = 0;
       const ticketTypeIds = registrationData.orders.map(
         (order) => order.ticketType
@@ -236,7 +246,10 @@ exports.refundRegistration = (registrationId, organizerId) => {
         throw new AppError("Registration not found.", 400);
       }
 
-      if (registration.status !== "completed" && registration.status !== "pending_refund") {
+      if (
+        registration.status !== "completed" &&
+        registration.status !== "pending_refund"
+      ) {
         throw new AppError(
           "The registration status must be 'completed' or 'pending_refund' to perform this action.",
           400
@@ -328,7 +341,7 @@ exports.bulkRefundRegistration = ({ registrationIds, organizerId }) => {
           _id: { $in: registrationIds },
         })
         .session(session);
-      
+
       if (registrations.length === 0) {
         throw new AppError("No registrations found.", 400);
       }
@@ -448,6 +461,43 @@ exports.bulkRefundRegistration = ({ registrationIds, organizerId }) => {
     } catch (error) {
       await session.abortTransaction();
       session.endSession();
+      reject(error);
+    }
+  });
+};
+
+exports.getAttendeesByEventId = (eventId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const registrations = await registrationModel
+        .find({ event: eventId })
+        .populate("user");
+
+      const attendees = registrations.map((registration) => {
+        if (registration.user !== null) {
+          return {
+            name: registration.user.profile.name,
+            email: registration.user.email,
+            registrationDate: registration.registrationDate,
+          };
+        } else {
+          return {
+            name:
+              registration.contactInfo.firstName +
+              " " +
+              registration.contactInfo.lastName,
+            email: registration.contactInfo.email,
+            registrationDate: registration.registrationDate,
+          };
+        }
+      });
+
+      resolve({
+        status: "success",
+        results: attendees.length,
+        data: attendees,
+      });
+    } catch (error) {
       reject(error);
     }
   });

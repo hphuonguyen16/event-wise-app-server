@@ -86,6 +86,10 @@ async function calculateTicketStatus(event) {
   const now = new Date();
   const tickets = await TicketType.find({ event: event._id });
 
+  if (tickets.length === 0) {
+    return null;
+  }
+
   console.log("tickets", tickets);
   console.log("now", now);
   console.log("event", tickets[0].endDate >= now);

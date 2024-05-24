@@ -4,6 +4,7 @@ const catchAsync = require("./../utils/catchAsync");
 const EventModel = require("../models/eventModel");
 const AppError = require("./../utils/appError");
 const EventService = require("./../services/eventServices");
+const RegistrationService = require("./../services/registrationServices");
 const TicketTypeService = require("./../services/ticketServices");
 
 
@@ -39,6 +40,11 @@ exports.changeTicketStatusEvent = catchAsync(async (req, res) => {
     req.body.ticketStatus,
     req.params.id
   );
+  res.status(200).json(data);
+});
+
+exports.getAttendeesByEvent = catchAsync(async (req, res) => {
+  const data = await RegistrationService.getAttendeesByEventId(req.params.id);
   res.status(200).json(data);
 });
 

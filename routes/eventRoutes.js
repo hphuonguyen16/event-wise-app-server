@@ -33,6 +33,10 @@ router
   .route("/:id/ticket-types")
   .get(authController.protect, ticketTypeController.getTicketTypesByEventId);
 
+router
+  .route("/:id/attendees")
+  .get(authController.protect, eventController.getAttendeesByEvent);
+
   router
     .route("/:id/ticket-status")
     .put(authController.protect, eventController.changeTicketStatusEvent);

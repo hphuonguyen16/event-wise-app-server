@@ -21,3 +21,5 @@ exports.getMyBankAccount = catchAsync(async (req, res, next) => {
   const data = await bankAccountServices.getBankAccountByUserId(req.user.id);
   res.status(200).json(data);
 });
+
+

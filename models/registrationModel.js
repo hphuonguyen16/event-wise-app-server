@@ -18,7 +18,7 @@ const RegistrationSchema = new mongoose.Schema({
       },
       quantity: {
         type: Number,
-      }
+      },
     },
   ],
   totalPrice: {
@@ -37,8 +37,8 @@ const RegistrationSchema = new mongoose.Schema({
     default: "completed",
   },
   contactInfo: {
-   firstName: {
-     type: String,
+    firstName: {
+      type: String,
     },
     lastName: {
       type: String,
@@ -52,6 +52,10 @@ const RegistrationSchema = new mongoose.Schema({
     type: String,
     enum: ["manual", "online"],
     default: "online",
+  },
+  checkedIn: {
+    type: Boolean,
+    default: false,
   },
 
   createdAt: {

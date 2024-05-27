@@ -31,6 +31,8 @@ router
   .route("/:id/refund")
   .put(authController.protect, registrationController.refundRegistration);
 
-
+router
+  .route("/:id/check-in")
+  .get(authController.protect, registrationController.checkIn);
 
 module.exports = router;

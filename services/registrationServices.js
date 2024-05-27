@@ -6,6 +6,8 @@ const ticketTypeModel = require("../models/ticketTypeModel");
 const eventModel = require("../models/eventModel");
 const transactionModel = require("../models/transactionModel");
 const mongoose = require("mongoose");
+const sendQRCode = require("../utils/createQRCode");
+const { sendBussinessAprrovalEmail } = require("../utils/sendEmail");
 
 exports.getRegistrationsByEventId = (eventId, query) => {
   return new Promise(async (resolve, reject) => {
@@ -117,9 +119,9 @@ exports.createRegistration = (registrationData) => {
         event: registrationData.event,
       });
 
-      if (existingRegistration) {
-        throw new AppError("User has already registered for this event.", 400);
-      }
+      // if (existingRegistration) {
+      //   throw new AppError("User has already registered for this event.", 400);
+      // }
 
       let totalPrice = 0;
       const ticketTypeIds = registrationData.orders.map(
@@ -226,7 +228,17 @@ exports.createRegistration = (registrationData) => {
         transaction_type: "payment",
         status: "success",
       });
-
+       const segs = [
+         { data: `${registration._id}`, mode: 'byte' },
+       ];
+      await sendBussinessAprrovalEmail(
+        "hoangthiphuonguyen1602@gmail.com",
+        "Business Approval",
+        segs
+      );
+      const qrCode = await sendQRCode(segs);
+      registration.QRCode = qrCode;
+      await registration.save();
       resolve({
         status: "success",
         data: registration,
@@ -471,14 +483,22 @@ exports.getAttendeesByEventId = (eventId) => {
     try {
       const registrations = await registrationModel
         .find({ event: eventId })
-        .populate("user");
+        .populate("user")
+        .populate("orders.ticketType");
+
+      console.log(registrations);
 
       const attendees = registrations.map((registration) => {
-        if (registration.user !== null) {
+        if (registration.user) {
           return {
-            name: registration.user.profile.name,
-            email: registration.user.email,
-            registrationDate: registration.registrationDate,
+            name: registration.user?.profile.name,
+            email: registration.user?.email,
+            registrationDate: registration?.registrationDate,
+            avatar: registration.user?.profile.avatar || "",
+            orderType: registration.orders.map(
+              (order) => order.ticketType.name
+            ),
+            checkedIn: registration.checkedIn,
           };
         } else {
           return {
@@ -488,6 +508,11 @@ exports.getAttendeesByEventId = (eventId) => {
               registration.contactInfo.lastName,
             email: registration.contactInfo.email,
             registrationDate: registration.registrationDate,
+            avatar: "",
+            orderType: registration.orders.map(
+              (order) => order.ticketType.name
+            ),
+            checkedIn: registration.checkedIn,
           };
         }
       });
@@ -496,6 +521,33 @@ exports.getAttendeesByEventId = (eventId) => {
         status: "success",
         results: attendees.length,
         data: attendees,
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+// check in attendees
+
+exports.checkInAttendee = (registrationId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const registration = await registrationModel.findById(registrationId).populate("orders.ticketType").populate("user");
+      if (!registration) {
+        throw new AppError("Registration not found.", 404);
+      }
+      if (registration.checkedIn) {
+        throw new AppError(`Attendee ${registration.user?.profile.name} has already been checked in.`, 400);
+      }
+      registration.checkedIn = true;
+      await registration.save();
+      resolve({ 
+        status: "success",
+        data: {
+          name: registration.user?.profile.name,
+          orderType: registration.orders.map((order) => order.ticketType.name),
+        },
       });
     } catch (error) {
       reject(error);

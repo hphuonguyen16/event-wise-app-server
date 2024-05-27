@@ -12,7 +12,7 @@ const TransactionSchema = new mongoose.Schema(
     },
     organizer: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Organizer",
+      ref: "User",
     },
     amount: {
       type: Number,

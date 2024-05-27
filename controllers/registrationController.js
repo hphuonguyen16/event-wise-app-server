@@ -47,3 +47,8 @@ exports.bulkRefundRegistrations = catchAsync(async (req, res) => {
   const data = await RegistrationService.bulkRefundRegistration(req.body);
   res.status(200).json(data);
 });
+
+exports.checkIn = catchAsync(async (req, res) => {
+  const data = await RegistrationService.checkInAttendee(req.params.id);
+  res.status(200).json(data);
+});

@@ -21,6 +21,8 @@ const registrationRouter = require("./routes/registrationRoutes");
 const transactionRouter = require("./routes/transactionRoutes");
 const bankAccountRouter = require("./routes/bankAccountRoutes");
 const withdrawalRequestRouter = require("./routes/withdrawalRoutes");
+const canvasRouter = require("./routes/canvasRoutes");
+const tierRouter = require("./routes/tierRoutes");
 
 const cors = require("cors");
 
@@ -77,8 +79,8 @@ const limiter = rateLimit({
 app.use("/api", limiter);
 
 // Body parser, reading data from body into req.body
-app.use(express.json({ limit: "10kb" }));
-app.use(express.urlencoded({ extended: true, limit: "10kb" }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(upload.any());
@@ -120,6 +122,8 @@ app.use("/api/v1/registrations", registrationRouter);
 app.use("/api/v1/transactions", transactionRouter);
 app.use("/api/v1/bank-accounts", bankAccountRouter);
 app.use("/api/v1/withdrawal-requests", withdrawalRequestRouter);
+app.use("/api/v1/canvas", canvasRouter);
+app.use("/api/v1/tiers", tierRouter);
 
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));

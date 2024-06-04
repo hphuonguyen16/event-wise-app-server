@@ -4,6 +4,8 @@ const eventController = require("../controllers/eventController");
 const authController = require("../controllers/authController");
 const ticketTypeController = require("../controllers/ticketTypeController");
 const registrationController = require("../controllers/registrationController");
+const tierController = require("../controllers/tierController");
+const canvasController = require("../controllers/canvasController");
 const router = express.Router();
 
 
@@ -45,4 +47,12 @@ router
   .route("/:id/registrations")
   .get(authController.protect, registrationController.getRegistrationsByEventId);
 
+router
+  .route("/:id/tiers")
+  .get(authController.protect, tierController.getTiersByEventId);
+
+router
+  .route("/:id/canvas")
+  .get(authController.protect, canvasController.getCanvasByEventId)
+  .put(authController.protect, canvasController.updateCanvasByEventId);
 module.exports = router;

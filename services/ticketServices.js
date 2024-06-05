@@ -154,3 +154,22 @@ exports.updateTicketType = (ticketTypeId, data) => {
     }
   });
 };
+
+
+exports.getTicketTypeByTierId = (tierId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const ticketType = await TicketTypeModel.find({ tier: tierId });
+      if (!ticketType) {
+        reject(new AppError("Ticket Type not found", 404));
+        return;
+      }
+      resolve({
+        status: "success",
+        data: ticketType,
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};

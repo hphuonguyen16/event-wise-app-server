@@ -80,10 +80,21 @@ const TicketTypeSchema = new mongoose.Schema({
     },
     default: "free",
   },
+  tier: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Tier",
+  },
   createdAt: {
     type: Date,
     default: Date.now,
   },
+});
+
+TicketTypeSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: "tier"
+  });
+  next();
 });
 
 const TicketTypeModel = mongoose.model("TicketType", TicketTypeSchema);

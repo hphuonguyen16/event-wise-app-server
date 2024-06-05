@@ -26,3 +26,8 @@ exports.updateTicketTypeSoldCount = catchAsync(async (req, res, next) => {
   const data = await TicketTypeService.updateTicketTypeSoldCount(req.params.id);
   next();
 })
+
+exports.getTicketTypeByTierId = catchAsync(async (req, res) => {
+  const data = await TicketTypeService.getTicketTypeByTierId(req.params.id);
+  res.status(200).json(data);
+});

@@ -94,9 +94,6 @@ async function calculateTicketStatus(event) {
     return null;
   }
 
-  console.log("tickets", tickets);
-  console.log("now", now);
-  console.log("event", tickets[0].endDate >= now);
   if (
     tickets.some((ticket) => ticket.endDate >= now && ticket.startDate <= now)
   ) {
@@ -126,7 +123,6 @@ EventSchema.post("findOne", async function (doc) {
 });
 
 EventSchema.post("find", async function (docs) {
-  console.log("111111111111");
   for (const doc of docs) {
     const ticketStatus = await calculateTicketStatus(doc);
     if (ticketStatus) {

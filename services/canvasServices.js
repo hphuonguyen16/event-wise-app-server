@@ -1,6 +1,6 @@
 const CanvasModel = require("../models/canvasModel");
 const AppError = require("./../utils/appError");
-const SeatModel = require("../models/seatModel");
+const SeatModel = require("../models/seatSchema");
 
 exports.createCanvas = async (canvasData) => {
   try {
@@ -89,6 +89,85 @@ exports.createOrUpdateCanvas = async (eventId, canvasData) => {
       } else {
         result = await CanvasModel.create(canvasData);
       }
+      resolve({
+        status: "success",
+        data: result,
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+
+exports.updateSeats = async (eventId, seatsData) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const canvas = await CanvasModel.findOne({ event: eventId });
+      let { sections, tables } = canvas;
+
+      for (const seatData of seatsData) {
+        if (seatData.type === "section") {
+          sections = sections.map((section) => {
+            if (section._id.toString() === seatData.sectionId) {
+              section.subsections.forEach((subsection) => {
+                const seatsByRows = new Map(subsection.seats_by_rows); // Convert to Map object if it's not already
+                for (let [row, seats] of seatsByRows.entries()) {
+                  const seatIndex = seats.findIndex(
+                    (seat) => seat._id.toString() === seatData._id
+                  );
+                  if (seatIndex !== -1) {
+                    if (seats[seatIndex].status === "sold") {
+                      throw new AppError(
+                        `The seat ${seats[seatIndex].name} is already sold`,
+                        400
+                      );
+                    }
+                    seats[seatIndex] = {
+                      ...seats[seatIndex],
+                      ...seatData,
+                    };
+                  }
+                }
+
+                subsection.seats_by_rows = Array.from(seatsByRows.entries()); // Convert back to array of entries if necessary
+              });
+            }
+            return section;
+          });
+        } else if (seatData.type === "table") {
+          tables = tables.map((table) => {
+            if (table._id.toString() === seatData.sectionId) {
+              table.seatsInfo = table.seatsInfo.map((seat) => {
+                if (seat._id.toString() === seatData._id) {
+                  if (seat.status === "sold") {
+                    throw new AppError(
+                      `The seat ${seat.name} is already sold`,
+                      400
+                    );
+                  }
+                  return {
+                    ...seat,
+                    ...seatData,
+                  };
+                }
+                return seat;
+              });
+            }
+            return table;
+          });
+        }
+      }
+
+      const result = await CanvasModel.findByIdAndUpdate(
+        canvas._id,
+        {
+          sections,
+          tables,
+        },
+        { new: true }
+      );
+
       resolve({
         status: "success",
         data: result,

@@ -312,7 +312,6 @@ const sendBussinessAprrovalEmail = async (email, subject, data) => {
     });
 
     let qr = await createQRCode(data);
-    console.log(qr);
 
     const templatePath = `utils/template.html`; // đường dẫn tới template
 

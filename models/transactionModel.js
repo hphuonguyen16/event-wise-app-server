@@ -16,7 +16,7 @@ const TransactionSchema = new mongoose.Schema(
     },
     amount: {
       type: Number,
-      required: [true, "Please provide amount"],
+      //required: [true, "Please provide amount"],
     },
     date: {
       type: Date,

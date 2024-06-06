@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
+const seatSchema = require("./seatSchema");
 
 const RegistrationSchema = new mongoose.Schema({
   user: {
@@ -18,6 +19,9 @@ const RegistrationSchema = new mongoose.Schema({
       },
       quantity: {
         type: Number,
+      },
+      seat: {
+        type: seatSchema,
       },
     },
   ],

@@ -1,23 +1,24 @@
 const mongoose = require("mongoose");
+const seatSchema = require("./seatSchema");
 
-const seatSchema = new mongoose.Schema({
-  name: String,
-  status: {
-    type: String,
-    enum: ["available", "reserved", "sold"],
-    default: "available",
-  },
-  tier: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Tier",
-  },
-  type: String,
-  sectionId: String,
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+// const seatSchema = new mongoose.Schema({
+//   name: String,
+//   status: {
+//     type: String,
+//     enum: ["available", "reserved", "sold"],
+//     default: "available",
+//   },
+//   tier: {
+//     type: mongoose.Schema.Types.ObjectId,
+//     ref: "Tier",
+//   },
+//   type: String,
+//   sectionId: String,
+//   createdAt: {
+//     type: Date,
+//     default: Date.now,
+//   },
+// });
 
 //populate tier in seats sections.subsections.seats_by_rows
 

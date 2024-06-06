@@ -8,6 +8,7 @@ const transactionModel = require("../models/transactionModel");
 const mongoose = require("mongoose");
 const sendQRCode = require("../utils/createQRCode");
 const { sendBussinessAprrovalEmail } = require("../utils/sendEmail");
+const canvasServices = require("./canvasServices");
 
 exports.getRegistrationsByEventId = (eventId, query) => {
   return new Promise(async (resolve, reject) => {
@@ -228,9 +229,7 @@ exports.createRegistration = (registrationData) => {
         transaction_type: "payment",
         status: "success",
       });
-       const segs = [
-         { data: `${registration._id}`, mode: 'byte' },
-       ];
+      const segs = [{ data: `${registration._id}`, mode: "byte" }];
       await sendBussinessAprrovalEmail(
         "hoangthiphuonguyen1602@gmail.com",
         "Business Approval",
@@ -387,14 +386,11 @@ exports.bulkRefundRegistration = ({ registrationIds, organizerId }) => {
           const ticketType = await ticketTypeModel
             .findById(order.ticketType)
             .session(session);
-          console.log("ticketType", ticketType);
           totalPrice += ticketType.price * order.quantity;
         }
 
         refundAmount += totalPrice;
       }
-
-      console.log("refundAmount", refundAmount);
 
       const organizer = await userModel.findById(organizerId).session(session);
       if (organizer.balance < refundAmount) {
@@ -486,8 +482,6 @@ exports.getAttendeesByEventId = (eventId) => {
         .populate("user")
         .populate("orders.ticketType");
 
-      console.log(registrations);
-
       const attendees = registrations.map((registration) => {
         if (registration.user) {
           return {
@@ -533,21 +527,52 @@ exports.getAttendeesByEventId = (eventId) => {
 exports.checkInAttendee = (registrationId) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const registration = await registrationModel.findById(registrationId).populate("orders.ticketType").populate("user");
+      const registration = await registrationModel
+        .findById(registrationId)
+        .populate("orders.ticketType")
+        .populate("user");
       if (!registration) {
         throw new AppError("Registration not found.", 404);
       }
       if (registration.checkedIn) {
-        throw new AppError(`Attendee ${registration.user?.profile.name} has already been checked in.`, 400);
+        throw new AppError(
+          `Attendee ${registration.user?.profile.name} has already been checked in.`,
+          400
+        );
       }
       registration.checkedIn = true;
       await registration.save();
-      resolve({ 
+      resolve({
         status: "success",
         data: {
           name: registration.user?.profile.name,
           orderType: registration.orders.map((order) => order.ticketType.name),
         },
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+exports.createSeatingRegistration = (data) => {
+  return new Promise(async (resolve, reject) => {
+
+    try {
+
+      let { seats, registration } = data;
+      // Change the status of seats to sold
+      const newSeats = seats.map((seat) => ({
+        ...seat,
+        status: "sold",
+      }));
+
+      console.log("Creating seating registration...");
+      await canvasServices.updateSeats(registration.event, newSeats);
+      await this.createRegistration(registration);
+
+      resolve({
+        status: "success",
       });
     } catch (error) {
       reject(error);

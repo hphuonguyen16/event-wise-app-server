@@ -24,6 +24,12 @@ exports.createRegistration = catchAsync(async (req, res) => {
   res.status(201).json(data);
 });
 
+exports.createSeatingRegistration = catchAsync(async (req, res) => {
+  if (!req.body.user && !req.body.contactInfo) req.body.user = req.user.id;
+  const data = await RegistrationService.createSeatingRegistration(req.body);
+  res.status(201).json(data);
+});
+
 exports.getAllRegistrations = catchAsync(async (req, res) => {
   const data = await RegistrationService.getAllRegistrations(req.query);
   res.status(200).json(data);

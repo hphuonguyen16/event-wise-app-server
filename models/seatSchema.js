@@ -27,6 +27,4 @@ seatSchema.pre(/^find/, function (next) {
   next();
 });
 
-const SeatModel = mongoose.model("Seat", seatSchema);
-
-module.exports = SeatModel;
+module.exports = seatSchema;

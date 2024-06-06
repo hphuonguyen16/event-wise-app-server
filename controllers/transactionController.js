@@ -52,7 +52,6 @@ exports.createTransactionDeposit = catchAsync(async (req, res, next) => {
       : process.env.PRODUCTION_BASE_URL;
 
   let returnUrl = `${base_url}${config.get("vnp_ReturnUrl")}`;
-  console.log(returnUrl);
   let orderId = transaction.data._id;
   let amount = req.body.amount;
   let bankCode = "VNBANK";
@@ -80,14 +79,12 @@ exports.createTransactionDeposit = catchAsync(async (req, res, next) => {
   }
 
   vnp_Params = sortObject(vnp_Params);
-  // console.log(vnp_Params);
   let querystring = require("qs");
   let signData = querystring.stringify(vnp_Params, { encode: false });
   let hmac = crypto.createHmac("sha512", secretKey);
   let signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
   vnp_Params["vnp_SecureHash"] = signed;
   vnpUrl += "?" + querystring.stringify(vnp_Params, { encode: false });
-  // console.log(vnpUrl);
   // res.redirect(vnpUrl);
   res.status(200).json({
     status: "success",
@@ -106,7 +103,6 @@ exports.executeTransaction = catchAsync(async (req, res, next) => {
 
   const transaction = (await TransactionServices.getTransactionById(orderId))
     .data;
-  console.log("transaction",transaction)
   vnp_Params = sortObject(vnp_Params);
   let secretKey = config.get("vnp_HashSecret");
   let querystring = require("qs");

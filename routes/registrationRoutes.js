@@ -35,4 +35,6 @@ router
   .route("/:id/check-in")
   .get(authController.protect, registrationController.checkIn);
 
+router.route("/seating").post(registrationController.createSeatingRegistration);
+
 module.exports = router;

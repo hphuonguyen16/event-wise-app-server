@@ -73,7 +73,6 @@ exports.refreshToken = catchAsync(async (req, res, next) => {
       new AppError("You are not logged in! Please log in to get access.", 401)
     );
   const refreshToken = cookies.refresh;
-  console.log("refreshToken", refreshToken);
   const user = findUserByRefreshToken(refreshToken);
   const decoded = await promisify(jwt.verify)(
     refreshToken,

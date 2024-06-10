@@ -48,6 +48,11 @@ exports.getAttendeesByEvent = catchAsync(async (req, res) => {
   res.status(200).json(data);
 });
 
+exports.getEventOverview = catchAsync(async (req, res) => {
+  const data = await EventService.getEventOverview(req.params.id);
+  res.status(200).json(data);
+});
+
 
 exports.getAllEvents = handlerFactory.getAll(EventModel);
 exports.getEvent = handlerFactory.getOne(EventModel);

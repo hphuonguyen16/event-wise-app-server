@@ -63,8 +63,8 @@ exports.updateMe = (id, data) => {
             bio: data.bio,
             birthday: data.birthday,
             social: {
-              facebook: data.social.facebook,
-              twitter: data.social.twitter,
+              facebook: data.social?.facebook,
+              twitter: data.social?.twitter,
             },
             website: data.website,
           }

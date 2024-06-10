@@ -84,17 +84,62 @@ const TicketTypeSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Tier",
   },
+  promo: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Promo",
+    },
+  ],
   createdAt: {
     type: Date,
     default: Date.now,
   },
+}, {
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true },
+
 });
 
 TicketTypeSchema.pre(/^find/, function (next) {
   this.populate({
     path: "tier"
+  })
+  .populate({
+    path: "promo",
+    select: "-__v",
   });
   next();
+});
+
+TicketTypeSchema.virtual("discountPrice").get(function () {
+  // If no promos associated, return original price
+  if (!this.promo || this.promo.length === 0) {
+    return this.price;
+  }
+
+  // Get current date
+  const currentDate = new Date();
+
+  // Iterate over promos to find valid one
+  for (const promo of this.promo) {
+    if (currentDate >= promo.startDate && currentDate <= promo.endDate) {
+      // Calculate discounted price based on promo
+      let discountedPrice = this.price;
+      if (promo.discountType === "percentage") {
+        discountedPrice -= (this.price * promo.discount) / 100;
+      } else if (promo.discountType === "amount") {
+        discountedPrice -= promo.discount;
+      }
+
+      // Ensure discounted price is not negative
+      discountedPrice = Math.max(discountedPrice, 0);
+
+      // Return discounted price
+      return discountedPrice;
+    }
+  }
+
+  return this.price;
 });
 
 const TicketTypeModel = mongoose.model("TicketType", TicketTypeSchema);

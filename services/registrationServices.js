@@ -26,7 +26,7 @@ exports.getRegistrationsByEventId = (eventId, query) => {
       let registrations = await features.query;
       registrations = await registrations.map((registration) => {
         registration.totalPrice = registration.orders.reduce((acc, order) => {
-          return acc + order.ticketType.price * order.quantity;
+          return acc + order.price * order.quantity;
         }, 0);
         return registration;
       });
@@ -66,7 +66,7 @@ exports.getMyRegistrations = (userId, query) => {
       let registrations = await features.query;
       registrations = await registrations.map((registration) => {
         registration.totalPrice = registration.orders.reduce((acc, order) => {
-          return acc + order.ticketType.price * order.quantity;
+          return acc + order.price * order.quantity;
         }, 0);
         return registration;
       });
@@ -95,7 +95,7 @@ exports.getAllRegistrations = (query) => {
       let registrations = await features.query;
       registrations = await registrations.map((registration) => {
         registration.totalPrice = registration.orders.reduce((acc, order) => {
-          return acc + order.ticketType.price * order.quantity;
+          return acc + order.price * order.quantity;
         }, 0);
         return registration;
       });
@@ -130,9 +130,11 @@ exports.createRegistration = (registrationData) => {
       );
 
       // Retrieve ticket types and calculate available tickets
-      const ticketTypes = await ticketTypeModel.find({
-        _id: { $in: ticketTypeIds },
-      });
+      const ticketTypes = await ticketTypeModel
+        .find({
+          _id: { $in: ticketTypeIds },
+        })
+        .populate("promo");
 
       for (const order of registrationData.orders) {
         //check order is in minimum and maximum quantity
@@ -153,6 +155,28 @@ exports.createRegistration = (registrationData) => {
             `Order quantity is less than minimum quantity for ticket type ${ticketType._id}.`
           );
         }
+        //check if ticket type discountPrice is still apply by check the time of promo
+        if (ticketType.discountPrice < ticketType.price) {
+          const promo = ticketType.promo;
+          if (promo.length > 0) {
+            let isPromoValid = false;
+            for (let i = 0; i < promo.length; i++) {
+              if (
+                promo[i].startDate <= Date.now() &&
+                promo[i].endDate >= Date.now()
+              ) {
+                isPromoValid = true;
+                break;
+              }
+            }
+            if (!isPromoValid) {
+              throw new AppError(
+                `Promo for ticket type ${ticketType._id} is no longer valid.`
+              );
+            }
+          }
+        }
+
         // Check if available tickets are sufficient for this order
         const availableTickets = ticketType.quantity - ticketType.sold;
         if (availableTickets < order.quantity) {
@@ -160,17 +184,21 @@ exports.createRegistration = (registrationData) => {
             `Not enough available tickets for ticket type ${ticketType._id}.`
           );
         }
-        totalPrice += ticketType.price * order.quantity;
+        totalPrice += order.price * order.quantity;
       }
 
       if (registrationData.user) {
         const user = await userModel.findById(registrationData.user);
         if (!user) {
-          throw new AppError("User not found.", 404);
+          throw new AppError("User not found.", 400);
         }
 
-        if (user.balance < totalPrice || totalPrice <= 0) {
+        if (user.balance < totalPrice) {
           throw new AppError("Insufficient balance.", 400);
+        }
+
+        if (totalPrice < 0) {
+          throw new AppError("Total price must be greater than 0.", 400);
         }
 
         await userModel.findByIdAndUpdate(
@@ -271,7 +299,7 @@ exports.refundRegistration = (registrationId, organizerId) => {
 
       for (const order of registration.orders) {
         const ticketType = await ticketTypeModel.findById(order.ticketType);
-        totalPrice += ticketType.price * order.quantity;
+        totalPrice += order.price * order.quantity;
       }
 
       const organizer = await userModel.findById(organizerId);
@@ -386,7 +414,7 @@ exports.bulkRefundRegistration = ({ registrationIds, organizerId }) => {
           const ticketType = await ticketTypeModel
             .findById(order.ticketType)
             .session(session);
-          totalPrice += ticketType.price * order.quantity;
+          totalPrice += order.price * order.quantity;
         }
 
         refundAmount += totalPrice;
@@ -404,7 +432,7 @@ exports.bulkRefundRegistration = ({ registrationIds, organizerId }) => {
           const ticketType = await ticketTypeModel
             .findById(order.ticketType)
             .session(session);
-          totalPrice += ticketType.price * order.quantity;
+          totalPrice += order.price * order.quantity;
         }
 
         const user = await userModel
@@ -557,9 +585,7 @@ exports.checkInAttendee = (registrationId) => {
 
 exports.createSeatingRegistration = (data) => {
   return new Promise(async (resolve, reject) => {
-
     try {
-
       let { seats, registration } = data;
       // Change the status of seats to sold
       const newSeats = seats.map((seat) => ({
@@ -567,7 +593,6 @@ exports.createSeatingRegistration = (data) => {
         status: "sold",
       }));
 
-      console.log("Creating seating registration...");
       await canvasServices.updateSeats(registration.event, newSeats);
       await this.createRegistration(registration);
 

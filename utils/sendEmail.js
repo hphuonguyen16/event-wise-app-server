@@ -346,6 +346,46 @@ const sendBussinessAprrovalEmail = async (email, subject, data) => {
   }
 };
 
+const sendEventStatusEmail = async (email, subject, data) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST,
+      service: process.env.SERVICE,
+      port: Number(process.env.EMAIL_PORT),
+      secure: Boolean(process.env.SECURE),
+      auth: {
+        user: process.env.USER,
+        pass: process.env.PASS,
+      },
+    });
+
+    const templatePath = `utils/eventStatusTemplate.html`; // đường dẫn tới template
+
+    if (fs.existsSync(templatePath)) {
+      const template = fs.readFileSync(templatePath, "utf-8");
+      
+      const html = ejs.render(template, {
+        dueDate: data.date.toDateString(),
+      });
+      // templateVars là các biến được truyền vào template thông qua hàm render
+      // const text = convert(html);
+      const htmlWithStylesInlined = juice(html);
+
+      await transporter.sendMail({
+        from: process.env.USER,
+        to: email,
+        subject: subject,
+        html: htmlWithStylesInlined,
+      });
+    }
+    console.log("email sent successfully");
+  } catch (error) {
+    console.log("email not sent!");
+    console.log(error);
+    return error;
+  }
+};
+
 const sendBusinessRejectionEmail = async (email, subject, text) => {
   try {
     const transporter = nodemailer.createTransport({
@@ -644,4 +684,5 @@ module.exports = {
   sendEmail: sendEmail,
   sendBussinessAprrovalEmail: sendBussinessAprrovalEmail,
   sendBusinessRejectionEmail: sendBusinessRejectionEmail,
+  sendEventStatusEmail,
 };

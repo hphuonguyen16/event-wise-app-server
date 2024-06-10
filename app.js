@@ -23,6 +23,7 @@ const bankAccountRouter = require("./routes/bankAccountRoutes");
 const withdrawalRequestRouter = require("./routes/withdrawalRoutes");
 const canvasRouter = require("./routes/canvasRoutes");
 const tierRouter = require("./routes/tierRoutes");
+const promoRouter = require("./routes/promoRoutes");
 
 const cors = require("cors");
 
@@ -124,6 +125,7 @@ app.use("/api/v1/bank-accounts", bankAccountRouter);
 app.use("/api/v1/withdrawal-requests", withdrawalRequestRouter);
 app.use("/api/v1/canvas", canvasRouter);
 app.use("/api/v1/tiers", tierRouter);
+app.use("/api/v1/promos", promoRouter);
 
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));

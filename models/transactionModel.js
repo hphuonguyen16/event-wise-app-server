@@ -34,7 +34,10 @@ const TransactionSchema = new mongoose.Schema(
       type: String,
       enum: ["payment", "withdrawal", "deposit", "refund"],
     },
-
+    createdAt : {
+      type: Date,
+      default: Date.now,
+    },
     ipAddress: String,
   },
   {

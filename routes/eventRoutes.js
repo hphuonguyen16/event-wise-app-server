@@ -6,6 +6,7 @@ const ticketTypeController = require("../controllers/ticketTypeController");
 const registrationController = require("../controllers/registrationController");
 const tierController = require("../controllers/tierController");
 const canvasController = require("../controllers/canvasController");
+const promoController = require("../controllers/promoController");
 const router = express.Router();
 
 
@@ -55,4 +56,12 @@ router
   .route("/:id/canvas")
   .get(authController.protect, canvasController.getCanvasByEventId)
   .put(authController.protect, canvasController.updateCanvasByEventId);
+
+router
+  .route("/:id/overview")
+  .get(authController.protect, eventController.getEventOverview);
+
+router
+  .route("/:id/promos")
+  .get(authController.protect, promoController.getPromosByEvent);
 module.exports = router;

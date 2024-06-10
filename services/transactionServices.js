@@ -112,11 +112,9 @@ exports.getAllTransactions = (query) => {
             select: "profile email", // Specify the fields you want to retrieve
           }),
         query
-      )
-        .sort()
-        .paginate();
+      ).paginate();
 
-      const transactions = await features.query;
+      const transactions = await features.query.sort({ date: -1 });
 
       resolve({
         status: "success",
@@ -163,4 +161,3 @@ exports.getTransactionByBusiness = (id, query) => {
     }
   });
 };
-

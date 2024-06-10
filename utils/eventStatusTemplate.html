@@ -1,0 +1,85 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        background: #fff;
+      }
+
+      .email--background {
+        background: #eee;
+        padding: 10px;
+        text-align: center;
+      }
+
+      .email--container {
+        max-width: 500px;
+        background: #fff;
+        margin: 0 auto;
+        overflow: hidden;
+        border-radius: 5px;
+      }
+
+      .email--inner-container {
+        padding: 0 5% 40px;
+      }
+
+      img {
+        max-width: 100%;
+        display: block;
+      }
+
+      p {
+        font-size: 16px;
+        line-height: 1.5;
+        color: darken(#eee, 30);
+        margin-bottom: 30px;
+      }
+
+      .cta {
+        display: inline-block;
+        padding: 10px 20px;
+        color: #fff;
+        background: #373629;
+        text-decoration: none;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        border-radius: 5px;
+        font-size: 13px;
+      }
+
+      .footer-junk {
+        padding: 20px;
+        font-size: 10px;
+      }
+
+      .footer-junk a {
+        text-decoration: none;
+        color: gray;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="email--background">
+      <div class="email--container">
+        <div class="email--inner-container">
+          <p>
+            We regret to inform you that your event has been
+            <strong>cancelled</strong> by the admin due to a violation of our
+            terms and conditions. For further details, please contact the admin
+            directly. If you have already sold tickets, please ensure refunds
+            are processed before the event date. The deadline for issuing
+            refunds is <strong><%= dueDate %></strong>.
+          </p>
+        </div>
+      </div>
+      <div class="footer-junk">
+        <a href="#">Event Wise</a>
+      </div>
+    </div>
+  </body>
+</html>

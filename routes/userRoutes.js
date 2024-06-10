@@ -36,4 +36,8 @@ router
   .patch(userController.updateUser)
   .delete(userController.deleteUser);
 
+router
+  .route("/:id/lock-unlock-account")
+  .put(userController.lockOrUnlockAccount);
+
 module.exports = router;

@@ -119,7 +119,7 @@ exports.updateSeats = async (eventId, seatsData) => {
                   if (seatIndex !== -1) {
                     if (seats[seatIndex].status === "sold") {
                       throw new AppError(
-                        `The seat ${seats[seatIndex].name} is already sold`,
+                        `The seat ${seats[seatIndex].name} is already sold. Please reload the page to get the latest data.`,
                         400
                       );
                     }

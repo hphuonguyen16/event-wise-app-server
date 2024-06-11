@@ -11,6 +11,6 @@ exports.updateTier = handlerFactory.updateOne(TierModel);
 exports.deleteTier = handlerFactory.deleteOne(TierModel);
 
 exports.getTiersByEventId = catchAsync(async (req, res, next) => {
-  const tiers = await TierService.getTiersByEventId(req.params.eventId);
+  const tiers = await TierService.getTiersByEventId(req.params.id);
   res.status(200).json(tiers);
 });

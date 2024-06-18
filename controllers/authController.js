@@ -8,17 +8,22 @@ const authService = require("./../services/authServices");
 
 const createAccessToken = (user, res) => {
   const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-    expiresIn: "10000s",
+    expiresIn: "30d", // Token expires in 30 days
   });
+
   const cookieOptions = {
-    expires: new Date(Date.now() + 60 * 60 * 1000),
+    expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Cookie expires in 30 days
     httpOnly: true,
     secure: false,
     sameSite: "none",
   };
-  if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
-  if (process.env.NODE_ENV === "development")
-    res.cookie("jwt", token, cookieOptions);
+
+  if (process.env.NODE_ENV === "production") {
+    cookieOptions.secure = true;
+  }
+
+  res.cookie("jwt", token, cookieOptions);
+
   return token;
 };
 

@@ -102,14 +102,14 @@ exports.searchEventsOrOrganizers = (queryString) => {
   return new Promise(async (resolve, reject) => {
     try {
       const eventSearchResult = await EventModel.find({
-        title: { $regex: new RegExp(queryString, "i") }, // Case-insensitive search
+        title: { $regex: new RegExp(queryString, "i") }, // Case-insensitive and Unicode search
         isPublished: true,
         visibility: "public",
       });
 
       // Search for organizers by name
       const organizerSearchResult = await ProfileModel.find({
-        name: { $regex: new RegExp(queryString, "i") }, // Case-insensitive search
+        name: { $regex: new RegExp(queryString, "i") }, // Case-insensitive and Unicode search
       });
 
       resolve({

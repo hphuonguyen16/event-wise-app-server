@@ -10,7 +10,7 @@ exports.getTicketTypesByEventId = (eventId, query) => {
   return new Promise(async (resolve, reject) => {
     try {
       const features = new APIFeatures(
-        TicketTypeModel.find({ event: eventId }),
+        TicketTypeModel.find({ event: eventId}),
         query
       )
         .sort()

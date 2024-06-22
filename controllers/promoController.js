@@ -7,7 +7,6 @@ const TicketTypeModel = require("../models/ticketTypeModel");
 
 exports.getAllPromos = handlerFactory.getAll(PromoModel);
 exports.getPromo = handlerFactory.getOne(PromoModel);
-exports.updatePromo = handlerFactory.updateOne(PromoModel);
 exports.deletePromo = handlerFactory.deleteOne(PromoModel);
 
 exports.getPromosByEvent = catchAsync(async (req, res) => {
@@ -17,5 +16,10 @@ exports.getPromosByEvent = catchAsync(async (req, res) => {
 
 exports.createPromo = catchAsync(async (req, res) => {
   const promo = await promoService.createPromo(req.body);
+  res.status(201).json(promo);
+});
+
+exports.updatePromo = catchAsync(async (req, res) => {
+  const promo = await promoService.updatePromo(req.body);
   res.status(201).json(promo);
 });

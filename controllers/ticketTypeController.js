@@ -14,8 +14,8 @@ exports.getTicketTypesByEventId = catchAsync(async (req, res) => {
 });
 
 exports.createTicketType = catchAsync(async (req, res) => {
-  if (!tier) {
-     req.body.tier = undefined;
+  if (!req.body.tier) {
+    req.body.tier = undefined;
   }
   const data = await TicketTypeService.createTicketType(req.body);
   res.status(201).json(data);

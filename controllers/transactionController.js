@@ -46,10 +46,7 @@ exports.createTransactionDeposit = catchAsync(async (req, res, next) => {
   let tmnCode = config.get("vnp_TmnCode");
   let secretKey = config.get("vnp_HashSecret");
   let vnpUrl = config.get("vnp_Url");
-  const base_url =
-    process.env.NODE_ENV === "development"
-      ? process.env.BASE_URL
-      : process.env.PRODUCTION_BASE_URL;
+  const base_url = process.env.PRODUCTION_BASE_URL;
 
   let returnUrl = `${base_url}${config.get("vnp_ReturnUrl")}`;
   let orderId = transaction.data._id;
